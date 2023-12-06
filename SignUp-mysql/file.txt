@@ -1,0 +1,3 @@
+gke-name = "None"
+region = "None"
+project_id = "None"
