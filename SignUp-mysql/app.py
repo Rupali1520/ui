@@ -42,7 +42,7 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 app.config['WTF_CSRF_ENABLED'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://admin:cockpitpro@cockpit.cuhfaiap2mux.us-east-1.rds.amazonaws.com:3306/cockpit'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://admin:cockpitpro@cockpit-database.c3xcuwqpwvp4.ap-south-1.rds.amazonaws.com:3306/cockpit'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -179,6 +179,39 @@ def show_details_aws():
     else:
         return redirect(url_for('login'))
 
+
+
+@app.route('/json-show-details-aws', methods=['POST'])
+def json_show_details_aws():
+    if current_user.is_authenticated:
+        username = current_user.username
+        key_vault_url = f"https://{username}.vault.azure.net/"
+    
+        # Use DefaultAzureCredential to automatically authenticate
+        credential = DefaultAzureCredential()
+
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        # Retrieve the secrets
+        secret_access_key = secret_client.get_secret("secret-Access-key").value
+        access_key = secret_client.get_secret("Access-key").value
+
+        # Return JSON response
+        response_data = {
+            "access_key": access_key,
+            "secret_access_key": secret_access_key,
+            "username": username
+        }
+
+        return jsonify(response_data),200
+    else:
+        return jsonify({"error": "no secrets found"}), 401
+
+
+
+
+
 @app.route('/show-details-azure', methods=['GET', 'POST'])
 def show_details_azure():
     if current_user.is_authenticated:
@@ -207,6 +240,42 @@ def show_details_azure():
         return redirect(url_for('login'))
 
 
+@app.route('/json-show-details-azure', methods=['POST'])
+def json_show_details_azure():
+    if current_user.is_authenticated:
+        username = current_user.username
+        key_vault_url = f"https://{username}.vault.azure.net/"
+    
+        # Use DefaultAzureCredential to automatically authenticate
+        credential = DefaultAzureCredential()
+        
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        # Retrieve the secret containing your Azure credentials
+        secret_id = "client-id"
+        secret_secret = "client-secret"
+        secret_subscription = "subscription-id"
+        secret_tenant = "tenant-id"
+
+        client_id = secret_client.get_secret(secret_id).value
+        client_secret = secret_client.get_secret(secret_secret).value
+        subscription_id = secret_client.get_secret(secret_subscription).value
+        tenant_id = secret_client.get_secret(secret_tenant).value
+
+        # Return JSON response
+        response_data = {
+            "username": username,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "subscription_id": subscription_id,
+            "tenant_id": tenant_id
+        }
+
+        return jsonify(response_data), 200
+    else:
+        return jsonify({"error": "no secrets found"}), 401
+
 
 @app.route('/show-details-gcp', methods=['GET', 'POST'])
 def show_details_gcp():
@@ -230,8 +299,37 @@ def show_details_gcp():
     else:
         return redirect(url_for('login'))
         
+@app.route('/json-show-details-gcp', methods=['POST'])
+def json_show_details_gcp():
+    if current_user.is_authenticated:
+        username = current_user.username
+        key_vault_url = f"https://{username}.vault.azure.net/"
+    
+        # Use DefaultAzureCredential to automatically authenticate
+        credential = DefaultAzureCredential()
         
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        # Retrieve the secrets
+        secret_name = "your-secret-name"
+        secret = secret_client.get_secret(secret_name)
+        secret_value = secret.value
+
+        # Return JSON response
+        response_data = {
+            "username": username,
+            "secret_value": secret_value
+        }
+
+        return jsonify(response_data), 200
         
+    else:
+        return jsonify({"error": "no secrets found"}), 401
+
+
+
+
 @app.route('/create-cluster', methods=['GET', 'POST'])
 def create_cluster():
     if current_user.is_authenticated:
@@ -290,6 +388,56 @@ def my_cluster_details_aws():
     else:
         return redirect(url_for('login'))
 
+
+
+@app.route('/json-my-cluster-details-aws', methods=['POST'])
+def json_my_cluster_details_aws():
+    if current_user.is_authenticated:
+        # Azure Key Vault details for AWS
+        key_vault_url_aws = "https://aws-final.vault.azure.net/"
+        access_key_secret = "Access-key"
+        secret_access_key_secret = "secret-Access-key"
+
+        # Retrieve credentials from Azure Key Vault
+        credential_aws = DefaultAzureCredential()
+        secret_client_aws = SecretClient(vault_url=key_vault_url_aws, credential=credential_aws)
+
+        # Retrieve the secrets from Key Vault
+        aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+        aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
+        region = request.form.get('region')  # Assuming 'region' is the name attribute of the input field
+
+        # Set up Boto3 client with retrieved credentials and region
+        eks_client = boto3.client(
+            'eks',
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_access_key,
+            region_name=region
+        )
+
+        clusters_data = []
+
+        try:
+            # List ready or healthy EKS clusters in the specified AWS region
+            eks_clusters = eks_client.list_clusters()
+            for cluster_name in eks_clusters['clusters']:
+                cluster_info = eks_client.describe_cluster(name=cluster_name)
+                if cluster_info['cluster']['status'] == 'ACTIVE':
+                    clusters_data.append({"name": cluster_name})
+
+            # Return the clusters_data as JSON response
+            return jsonify({"clusters": clusters_data}),200
+
+        except Exception as e:
+            error_message = f"Error listing ready or healthy clusters in {region}: {str(e)}"
+            return jsonify({"error": error_message}), 500  # Return error message with status code 500
+
+    else:
+        return jsonify({"error": "User not authenticated"}), 401 
+
+
+
+
 @app.route('/my-cluster-details', methods=['GET', 'POST'])
 def my_cluster_details():
     if current_user.is_authenticated:
@@ -339,6 +487,94 @@ def my_cluster_details_azure():
         return render_template('my-cluster-details-azure.html', username=username, aks_clusters=healthy_clusters )
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/json-my-cluster-details-azure', methods=['POST'])
+def json_my_cluster_details_azure():
+    if current_user.is_authenticated:
+        username = current_user.username
+        # Azure Key Vault details
+        key_vault_url = f"https://{username}.vault.azure.net/"
+        client_id_secret = "client-id"
+        client_secret_secret = "client-secret"
+        subscription_id_secret = "subscription-id"
+        tenant_id_secret = "tenant-id"
+
+        # Retrieve credentials from Azure Key Vault
+        credential = DefaultAzureCredential()
+
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        # Retrieve the secrets from Key Vault
+        client_id = secret_client.get_secret(client_id_secret).value
+        client_secret = secret_client.get_secret(client_secret_secret).value
+        subscription_id = secret_client.get_secret(subscription_id_secret).value
+        tenant_id = secret_client.get_secret(tenant_id_secret).value
+
+        # Set up the ContainerServiceClient with retrieved credentials
+        aks_client = ContainerServiceClient(credential, subscription_id)
+
+        # List AKS clusters in the subscription
+        aks_clusters = aks_client.managed_clusters.list()
+        healthy_clusters = [cluster.name for cluster in aks_clusters
+                            if cluster.provisioning_state.lower() == "succeeded"
+                            and cluster.agent_pool_profiles[0].provisioning_state.lower() == "succeeded"]
+
+        # Return the list of healthy AKS clusters as JSON response
+        return jsonify({"username": username, "aks_clusters": healthy_clusters}), 200
+
+    else:
+        return jsonify({"error": "User not authenticated"}), 401 
+    
+
+
+@app.route('/json-my-cluster-details-gcp', methods=['POST'])
+def json_my_cluster_details_gcp():
+    if current_user.is_authenticated:
+        username = current_user.username
+        # Azure Key Vault details for GCP
+        key_vault_url_gcp = f"https://{username}.vault.azure.net/"
+        gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
+
+        # Retrieve credentials from Azure Key Vault
+        credential_gcp = DefaultAzureCredential()
+        secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
+
+        # Retrieve the GCP credentials JSON from Key Vault
+        try:
+            gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
+
+            # Parse the JSON string into a dictionary
+            gcp_credentials_dict = json.loads(gcp_credentials_json)
+
+            # Use the parsed dictionary to create a service account credentials object
+            gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
+        except Exception as e:
+            print(f"Error retrieving or parsing GCP credentials: {e}")
+
+        # Use the service account credentials for the discovery build
+        service = discovery.build('container', 'v1', credentials=gcp_credentials)
+        gcp_projects = ['golden-plateau-401906']
+
+        # List to store GKE clusters data
+        clusters_data = []
+
+        for project in gcp_projects:
+            request = service.projects().locations().clusters().list(parent=f"projects/{project}/locations/-")
+            response = request.execute()
+
+            if 'clusters' in response:
+                for cluster in response['clusters']:
+                    clusters_data.append({project})
+        
+        # Return the list of GKE clusters data as a JSON response
+        return jsonify({"username": username, "clusters_data": clusters_data}), 200
+    else:
+        return jsonify({"error": "User not authenticated"}), 401 
+
+
+
 
 @app.route('/my-cluster-details-gcp', methods=['GET', 'POST'])
 def my_cluster_details_gcp():

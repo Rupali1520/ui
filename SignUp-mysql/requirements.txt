@@ -30,8 +30,22 @@ flask-cors
 
 python-gitlab
 
-packaging-23.2
-
 pyhcl
 
 boto3
+
+azure-mgmt-containerservice
+ 
+google-api-python-client
+ 
+google-cloud-container
+
+azure-mgmt-compute 
+
+azure-mgmt-storage 
+
+azure-mgmt-resource 
+
+azure-keyvault-secrets 
+
+azure-storage-blob
