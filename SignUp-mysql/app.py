@@ -50,7 +50,12 @@ login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
  
  
- 
+class UsernameTable(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"UsernameTable('{self.username}')"
 class User(db.Model,UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
@@ -1595,7 +1600,7 @@ availability_zones = "{availability_zones}"
 aks_name = "{aks_name}"
 aks_version = "{aks_version}"
 node_count = "{node_count}"
-private_cluster_enabled = "{cluster_type}"
+private_cluster_enabled = "true"
 vm_name = "{vm_name}"
 vm_pass = "{vm_pass}"'''
     else:
@@ -1606,7 +1611,7 @@ availability_zones = "{availability_zones}"
 aks_name = "{aks_name}"
 aks_version = "{aks_version}"
 node_count = "{node_count}"
-private_cluster_enabled = "{cluster_type}"'''   
+private_cluster_enabled = "false"'''   
     print("Configuration:", tf_config)
     
     print("Uploading tf file to gitlab")
@@ -2172,22 +2177,46 @@ def josnRegister():
      #      "message": 'Invalid or not mathced with defined expression',
       #     "statusCode": 401
        # }), 401
-@app.route("/login", methods=['GET', 'POST'])#
+# @app.route("/login", methods=['GET', 'POST'])#
+# def login():
+#   if current_user.is_authenticated:
+#        return redirect(url_for('dashboard'))
+#   form = LoginForm()
+#   if form.validate_on_submit():
+#      user = User.query.filter_by(email=form.email.data).first()
+#      if user and bcrypt.check_password_hash(user.password, form.password.data):
+#          login_user(user, remember=form.remember.data)
+#          next_page = request.args.get('next')
+#          flash('Login successful.', 'success')
+#          return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+#      else:
+#             flash('Login Unsuccessful. Please check email and password', 'danger')
+#   return render_template('login.html', title='Login', form=form)
+@app.route("/login", methods=['GET', 'POST'])
 def login():
-  if current_user.is_authenticated:
-       return redirect(url_for('dashboard'))
-  form = LoginForm()
-  if form.validate_on_submit():
-     user = User.query.filter_by(email=form.email.data).first()
-     if user and bcrypt.check_password_hash(user.password, form.password.data):
-         login_user(user, remember=form.remember.data)
-         next_page = request.args.get('next')
-         flash('Login successful.', 'success')
-         return redirect(next_page) if next_page else redirect(url_for('dashboard'))
-     else:
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    form = LoginForm()
+    
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            next_page = request.args.get('next')
+            flash('Login successful.', 'success')
+            
+            # Access the username from the user object and use it as needed
+            username = user.username
+            new_username_record = UsernameTable(username=username)
+            db.session.add(new_username_record)
+            db.session.commit()
+            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+        else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
-  return render_template('login.html', title='Login', form=form)
-
+    
+    return render_template('login.html', title='Login', form=form)
  
 @app.route("/JsonLogin", methods=['POST'])
 def JsonLogin():
