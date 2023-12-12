@@ -184,8 +184,12 @@ def show_details_aws():
     else:
         return redirect(url_for('login'))
 
-
-
+def export_azure_credentials():
+    os.environ["AZURE_CLIENT_ID"] = "4b5bd0f1-f692-47dd-a186-c8bf1925a86b"
+    os.environ["AZURE_CLIENT_SECRET"] = "N6C8Q~IP4Ls3SeCGkN4gOI0zUYjAEhM0A_d4Aa1K"
+    os.environ["AZURE_TENANT_ID"] = "bddba232-ecf3-49b7-a5b2-7cd128fc6135"
+    os.environ["AZURE_SUBSCRIPTION_ID"] = "1ce8bf33-286c-42dd-b193-10c310dd14b7"
+export_azure_credentials()
 @app.route('/json-show-details-aws', methods=['POST'])
 def json_show_details_aws():
     if current_user.is_authenticated:
