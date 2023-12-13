@@ -453,7 +453,7 @@ def json_my_cluster_details_aws():
             return jsonify({"error": error_message}), 500  # Return error message with status code 500
 
     else:
-        return jsonify({"error": "User not authenticated"}), 401 
+        return jsonify({"error": "cluster not found"}), 401 
 
 
 
@@ -551,7 +551,7 @@ def json_my_cluster_details_azure():
         return jsonify({"username": username, "aks_clusters": healthy_clusters}), 200
 
     else:
-        return jsonify({"error": "User not authenticated"}), 401 
+        return jsonify({"error": "cluster not found"}), 401 
     
 
 
@@ -599,7 +599,7 @@ def json_my_cluster_details_gcp():
         # Return the list of GKE clusters data as a JSON response
         return jsonify({"username": username, "clusters_data": clusters_data}), 200
     else:
-        return jsonify({"error": "User not authenticated"}), 401 
+        return jsonify({"error": "cluster not found"}), 401 
 
 
 
@@ -984,7 +984,7 @@ def delete_aks():
     resource_group = request.form.get('resource_group')
     
     with open('file.txt', 'w') as f:
-        f.write(f'eks-name = "{aks_name}"\n')
+        f.write(f'aks_name = "{aks_name}"\n')
         f.write(f'resource_group = "{resource_group}"\n')
         
     
@@ -1002,31 +1002,30 @@ def delete_aks():
 @app.route('/json_delete_aks', methods=['POST'])
 def json_delete_aks():
     try:
-       aks_name = request.form.get('aks_name')
-       resource_group = request.form.get('resource_group')
-    
-       with open('file.txt', 'w') as f:
-         f.write(f'aks-name = "{aks_name}"\n')
-         f.write(f'resource_group = "{resource_group}"\n')
+        aks_name = request.form.get('aks_name')
+        resource_group = request.form.get('resource_group')
 
-       file_path = f'azure-delete/file.txt'
-       tf_config = f''' 
-       aks_name = "{aks_name}"
-       resourse_group = "{resource_group}"
-       '''
-       print("Configuration:", tf_config)
-       print("Uploading tf file to gitlab")
-       upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-       print("Tf File uploaded successfully")
+        with open('file.txt', 'w') as f:
+            f.write(f'aks_name = "{aks_name}"\n')
+            f.write(f'resource_group = "{resource_group}"\n')
 
-       response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline please wait sometime...'}
-       return jsonify(response_data),202
+        file_path = f'azure-delete/file.txt'
+        tf_config = f''' 
+        aks_name = "{aks_name}"
+        resource_group = "{resource_group}"
+        '''
+        print("Configuration:", tf_config)
+        print("Uploading tf file to gitlab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+
+        response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline, please wait some time...'}
+        return jsonify(response_data), 202
 
     except Exception as e:
         error_message = f"An error occurred: {str(e)}"
         response_data = {'status': 'error', 'message': error_message}
-        return jsonify(response_data),404
-
+        return jsonify(response_data), 404
 
 @app.route('/delete_gke', methods=['POST'])
 def delete_gke():

@@ -1,3 +1,2 @@
-eks-name = "manjari"
-region = "us-east-1"
-node = "manjari-eks-nodegroup"
+aks_name = "None"
+resource_group = "None"
