@@ -1,0 +1,8 @@
+eks_name = "kkkk"
+Region = "us-east-1"
+instance_type = "m5.large"
+eks_version = "1.26"
+desired_size = "2"
+max_size = "3"
+min_size = "1"
+cluster_type = "Public"

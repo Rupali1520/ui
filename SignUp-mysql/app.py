@@ -168,7 +168,8 @@ def dashboard_cloud():
 def show_details_aws():
     if current_user.is_authenticated:
         username = current_user.username
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        name = username+"aws"
+        key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
@@ -190,11 +191,13 @@ def export_azure_credentials():
     os.environ["AZURE_TENANT_ID"] = "bddba232-ecf3-49b7-a5b2-7cd128fc6135"
     os.environ["AZURE_SUBSCRIPTION_ID"] = "1ce8bf33-286c-42dd-b193-10c310dd14b7"
 export_azure_credentials()
-@app.route('/json-show-details-aws', methods=['POST'])
+
+@app.route('/json-show-details-aws', methods=['GET', 'POST'])
 def json_show_details_aws():
     if current_user.is_authenticated:
         username = current_user.username
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        name = username+"aws"
+        key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
@@ -225,7 +228,8 @@ def json_show_details_aws():
 def show_details_azure():
     if current_user.is_authenticated:
         username = current_user.username
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        name = username+"azure"
+        key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
@@ -249,11 +253,12 @@ def show_details_azure():
         return redirect(url_for('login'))
 
 
-@app.route('/json-show-details-azure', methods=['POST'])
+@app.route('/json-show-details-azure', methods=['GET', 'POST'])
 def json_show_details_azure():
     if current_user.is_authenticated:
         username = current_user.username
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        name = username+"azure"
+        key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
@@ -290,7 +295,8 @@ def json_show_details_azure():
 def show_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        name = username+"gcp"
+        key_vault_url = f"https://{name}.vault.azure.net/"
     
     # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
@@ -308,11 +314,12 @@ def show_details_gcp():
     else:
         return redirect(url_for('login'))
         
-@app.route('/json-show-details-gcp', methods=['POST'])
+@app.route('/json-show-details-gcp', methods=['GET', 'POST'])
 def json_show_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        name = username+"gcp"
+        key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
@@ -361,7 +368,8 @@ def my_cluster_details_aws():
     if current_user.is_authenticated:
         username = current_user.username
         # Azure Key Vault details for AWS
-        key_vault_url_aws = "https://aws-final.vault.azure.net/"
+        name = username+"aws"
+        key_vault_url_aws = "https://{name}.vault.azure.net/"
         access_key_secret = "Access-key"
         secret_access_key_secret = "secret-Access-key"
 
@@ -399,11 +407,14 @@ def my_cluster_details_aws():
 
 
 
-@app.route('/json-my-cluster-details-aws', methods=['POST'])
+@app.route('/json-my-cluster-details-aws', methods=['GET','POST'])
 def json_my_cluster_details_aws():
     if current_user.is_authenticated:
         # Azure Key Vault details for AWS
-        key_vault_url_aws = "https://aws-final.vault.azure.net/"
+        username = current_user.username
+        # Azure Key Vault details for AWS
+        name = username+"aws"
+        key_vault_url_aws = "https://{name}.vault.azure.net/"
         access_key_secret = "Access-key"
         secret_access_key_secret = "secret-Access-key"
 
@@ -460,8 +471,12 @@ def my_cluster_details():
 def my_cluster_details_azure():
     if current_user.is_authenticated:
         username = current_user.username
+        #username = current_user.username
+        # Azure Key Vault details for AWS
+        name = username+"azure"
+        key_vault_url = "https://{name}.vault.azure.net/"
         # Azure Key Vault details
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        #key_vault_url = f"https://{username}.vault.azure.net/"
         client_id_secret = "client-id"
         client_secret_secret = "client-secret"
         subscription_id_secret = "subscription-id"
@@ -498,12 +513,14 @@ def my_cluster_details_azure():
         return redirect(url_for('login'))
 
 
-@app.route('/json-my-cluster-details-azure', methods=['POST'])
+@app.route('/json-my-cluster-details-azure', methods=['GET', 'POST'])
 def json_my_cluster_details_azure():
     if current_user.is_authenticated:
         username = current_user.username
+        name = username+"azure"
+        key_vault_url = "https://{name}.vault.azure.net/"
         # Azure Key Vault details
-        key_vault_url = f"https://{username}.vault.azure.net/"
+        #key_vault_url = f"https://{username}.vault.azure.net/"
         client_id_secret = "client-id"
         client_secret_secret = "client-secret"
         subscription_id_secret = "subscription-id"
@@ -538,12 +555,14 @@ def json_my_cluster_details_azure():
     
 
 
-@app.route('/json-my-cluster-details-gcp', methods=['POST'])
+@app.route('/json-my-cluster-details-gcp', methods=['GET', 'POST'])
 def json_my_cluster_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
+        name = username+"gcp"
+        key_vault_url_gcp = "https://{name}.vault.azure.net/"
         # Azure Key Vault details for GCP
-        key_vault_url_gcp = f"https://{username}.vault.azure.net/"
+    #    key_vault_url_gcp = f"https://{username}.vault.azure.net/"
         gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
 
         # Retrieve credentials from Azure Key Vault
@@ -589,8 +608,10 @@ def json_my_cluster_details_gcp():
 def my_cluster_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
-        # Azure Key Vault details for GCP
-        key_vault_url_gcp = f"https://{username}.vault.azure.net/"
+        name = username+"gcp"
+        key_vault_url_gcp = "https://{name}.vault.azure.net/"     
+   # Azure Key Vault details for GCP
+       # key_vault_url_gcp = f"https://{username}.vault.azure.net/"
         gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
 
         # Retrieve credentials from Azure Key Vault
@@ -729,7 +750,7 @@ def json_submit_form_aws():
  
     # Azure Resource Group and Key Vault Configuration
     resource_group_name = "rupali-rg"  
-    key_vault_name = User_name
+    key_vault_name = User_name+"aws"
     secrets_file_path = "./terraform.tfvars"
  
     
@@ -867,7 +888,7 @@ def submit_form_aws():
  
     # Azure Resource Group and Key Vault Configuration
     resource_group_name = "rupali-rg"  
-    key_vault_name = User_name
+    key_vault_name = User_name+"aws"
     secrets_file_path = "./terraform.tfvars"
  
     
@@ -1267,7 +1288,7 @@ def submit_form_azure():
  
     # Azure Resource Group and Key Vault Configuration
     resource_group_name = "rupali-rg"  
-    key_vault_name = User_name
+    key_vault_name = User_name+"azure"
     secrets_file_path = "./terraform.tfvars"
 
 
@@ -1398,7 +1419,7 @@ def json_submit_form_azure():
  
     # Azure Resource Group and Key Vault Configuration
     resource_group_name = "rupali-rg"  
-    key_vault_name = User_name
+    key_vault_name = User_name+"azure"
     secrets_file_path = "./terraform.tfvars"
 
 
@@ -1782,7 +1803,7 @@ def create_gcp():
     user = Data(username=user_data["user"], cloudname='gcp', clustername=gke_name)
     db.session.add(user)
     db.session.commit()
-    file_name = f'terraform-{user_data["user"]}.tfvars'
+    file_name = f'terraform-{user_data["user"]}gcp.tfvars'
     file_path = f'/gcp/templates/{file_name}'
 
 
@@ -1841,7 +1862,7 @@ def submit_form_gcp():
     User_Id = str(int(random.random()))
  
     # Azure Key Vault and Secrets Configuration
-    key_vault_name = User_name
+    key_vault_name = User_name+"gcp"
  
     resource_group_name = "rupali-rg"
     location = "westus2"
@@ -1922,7 +1943,7 @@ def json_submit_form_gcp():
     User_Id = str(int(random.random()))
 
     # Azure Key Vault and Secrets Configuration
-    key_vault_name = User_name
+    key_vault_name = User_name+"gcp"
     resource_group_name = "rupali-rg"
     location = "westus2"
     secrets_file_path = file_path
@@ -2024,7 +2045,7 @@ def create_gke():
     user = Data(username=user_data["user"], cloudname='gcp', clustername=gke_name)
     db.session.add(user)
     db.session.commit()
-    file_name = f'terraform-{user_data["user"]}.tfvars'
+    file_name = f'terraform-{user_data["user"]}gcp.tfvars'
     file_path = f'/gcp/templates/{file_name}'
 
 
@@ -2093,7 +2114,7 @@ def json_create_gke():
     with open(file_name, 'r') as file:
         user_data = json.load(file)
 
-    file_name = f'terraform-{user_data["user"]}.tfvars'
+    file_name = f'terraform-{user_data["user"]}gcp.tfvars'
     file_path = f'gcp/template/{file_name}'
 
 
@@ -2224,26 +2245,38 @@ def login():
  
 @app.route("/JsonLogin", methods=['POST'])
 def JsonLogin():
-    form = request.get_json()
-    user = User.query.filter_by(email=form['email']).first()
-    if user:
-        decoded = bcrypt.check_password_hash(user.password, form['password'])
-        print(decoded)
-        if user and decoded:
-            return json.dumps( {
-                "message": 'Login successful!',
-                "statusCode": 200
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            flash('Login successful.', 'success')
+
+            # Access the username from the user object and use it as needed
+            username = user.username
+            new_username_record = UsernameTable(username=username)
+            db.session.add(new_username_record)
+            db.session.commit()
+
+            return jsonify({
+                "message": 'Login successful.',
+                "statusCode": 200,
+                "username": username
             })
-        else: 
-            return json.dumps( {
-            "message": 'Login Unsuccessful. Please check email and password',
-            "statusCode": 401
+
+        else:
+            return jsonify({
+                "message": 'Login Unsuccessful. Please check email and password',
+                "statusCode": 401
             }), 401
-    else:
-        return json.dumps( {
-            "message": 'Login Unsuccessful. Please check email and password',
-            "statusCode": 401
-            }), 401           
+
+    return jsonify({
+        "message": 'Form validation failed.',
+        "statusCode": 400
+    }), 400
+           
 
 @app.route("/logout")
 def logout():
