@@ -7,53 +7,6 @@ WARNING: This is a development server. Do not use it in a production deployment.
 Press CTRL+C to quit
  * Restarting with stat
  * Debugger is active!
- * Debugger PIN: 902-563-232
-45.115.106.188 - - [13/Dec/2023 12:40:44] "OPTIONS /JsonLogin HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:40:49] "POST /JsonLogin HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:41:10] "OPTIONS /json_delete_aks HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:41:12] "POST /json_delete_aks HTTP/1.1" 202 -
-45.115.106.188 - - [13/Dec/2023 12:42:15] "OPTIONS /JsonLogin HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:42:17] "POST /JsonLogin HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:42:26] "GET /json-my-cluster-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:42:35] "GET /json-my-cluster-details-azure HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:42:37] "GET /json-my-cluster-details-gcp HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:42:40] "GET /json-my-cluster-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:42:42] "GET /json-my-cluster-details-azure HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:42:43] "GET /json-my-cluster-details-gcp HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:43:50] "OPTIONS /JsonLogin HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:43:52] "POST /JsonLogin HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:43:58] "GET /json-my-cluster-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:44:05] "GET /json-my-cluster-details-azure HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:44:07] "GET /json-my-cluster-details-gcp HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:46:37] "GET /json-my-cluster-details-aws HTTP/1.1" 401 -
- * Detected change in '/home/ubuntu/ui/SignUp-mysql/app.py', reloading
-Configuration:  
-        aks_name = "None"
-        resource_group = "None"
-        
-Uploading tf file to gitlab
-Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 65, 'encoding': 'base64', 'content_sha256': 'f307026ab745e2afe851c052e9745e96bf3460c4dbe041f6233bf5d2f357375f', 'ref': 'featurebrach1', 'blob_id': 'a1985078e582b46f217ee6d807f7945cf4ea52c4', 'commit_id': '1e7e18eb90e2a3abc0bd2d5d989ffbf683a97691', 'last_commit_id': '7842da08c7b5b8c75415dcd2c5819aeb2e8a6817', 'execute_filemode': False, 'content': 'IAogICAgICAgYWtzX25hbWUgPSAiTm9uZSIKICAgICAgIHJlc291cnNlX2dyb3VwID0gIk5vbmUiCiAgICAgICA='}
-Tf File uploaded successfully
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 902-563-232
-45.115.106.188 - - [13/Dec/2023 12:53:03] "OPTIONS /json_delete_aks HTTP/1.1" 200 -
-45.115.106.188 - - [13/Dec/2023 12:53:05] "POST /json_delete_aks HTTP/1.1" 202 -
-45.115.106.188 - - [13/Dec/2023 12:53:24] "GET /json-my-cluster-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:53:35] "GET /json-my-cluster-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:54:28] "GET /json-my-cluster-details-azure HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:55:09] "GET /json-show-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:55:23] "GET /json-show-details-azure HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:55:42] "GET /json-show-details-aws HTTP/1.1" 401 -
-45.115.106.188 - - [13/Dec/2023 12:56:00] "GET /json-show-details-aws HTTP/1.1" 401 -
- * Detected change in '/home/ubuntu/ui/SignUp-mysql/app.py', reloading
-Configuration:  
-        aks_name = "None"
-        resource_group = "None"
-        
-Uploading tf file to gitlab
-Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 68, 'encoding': 'base64', 'content_sha256': '1343ba92918df90427e371ca6fe2e22cbfad0394c164aa29edf200c8f269200b', 'ref': 'featurebrach1', 'blob_id': 'f12d53e8632e959a3856de215fc3fe4610d10610', 'commit_id': '71ae3052e9fa94a109aeed8c508004cc6f734766', 'last_commit_id': '71ae3052e9fa94a109aeed8c508004cc6f734766', 'execute_filemode': False, 'content': 'IAogICAgICAgIGFrc19uYW1lID0gIk5vbmUiCiAgICAgICAgcmVzb3VyY2VfZ3JvdXAgPSAiTm9uZSIKICAgICAgICA='}
-Tf File uploaded successfully
- * Restarting with stat
- * Debugger is active!
- * Debugger PIN: 902-563-232
+ * Debugger PIN: 102-965-187
+103.86.174.87 - - [14/Dec/2023 07:42:04] "POST /json-show-details-aws HTTP/1.1" 200 -
+152.58.129.138 - - [14/Dec/2023 07:44:15] "GET /json-show-details-aws HTTP/1.1" 405 -

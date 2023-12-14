@@ -25,10 +25,10 @@ from azure.mgmt.keyvault import KeyVaultManagementClient
 from flask import Flask, jsonify
 import hcl
 # Your Flask setup code
-
+import boto3
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-
+import traceback
 gitlab_url = "https://gitlab.com"
 project_id = "51819357"
 access_token = "glpat-EmyFa2Kj5NCy8gUiu4qG"    
@@ -192,38 +192,31 @@ def export_azure_credentials():
     os.environ["AZURE_SUBSCRIPTION_ID"] = "1ce8bf33-286c-42dd-b193-10c310dd14b7"
 export_azure_credentials()
 
-@app.route('/json-show-details-aws', methods=['GET', 'POST'])
+@app.route('/json-show-details-aws', methods=['POST'])
 def json_show_details_aws():
-    if current_user.is_authenticated:
-        username = current_user.username
-        name = username+"aws"
-        key_vault_url = f"https://{name}.vault.azure.net/"
+            form = request.get_json()
+            username = form['username']
+            name = username + "aws"
+            key_vault_url = f"https://{name}.vault.azure.net/"
     
-        # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
+            # Use DefaultAzureCredential to automatically authenticate
+            credential = DefaultAzureCredential()
 
-        # Create a SecretClient using the Key Vault URL
-        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+            # Create a SecretClient using the Key Vault URL
+            secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
-        # Retrieve the secrets
-        secret_access_key = secret_client.get_secret("secret-Access-key").value
-        access_key = secret_client.get_secret("Access-key").value
+            # Retrieve the secrets
+            secret_access_key = secret_client.get_secret("secret-Access-key").value
+            access_key = secret_client.get_secret("Access-key").value
 
-        # Return JSON response
-        response_data = {
-            "access_key": access_key,
-            "secret_access_key": secret_access_key,
-            "username": username
-        }
+            response_data = {
+                'access_key': access_key,
+                'secret_access_key': secret_access_key,
+                'username': username
+            }
 
-        return jsonify(response_data),200
-    else:
-        return jsonify({"error": "no secrets found"}), 401
-
-
-
-
-
+            return jsonify(response_data),200
+       
 @app.route('/show-details-azure', methods=['GET', 'POST'])
 def show_details_azure():
     if current_user.is_authenticated:
@@ -367,41 +360,54 @@ def my_cluster():
 def my_cluster_details_aws():
     if current_user.is_authenticated:
         username = current_user.username
+
         # Azure Key Vault details for AWS
-        name = username+"aws"
-        key_vault_url_aws = "https://{name}.vault.azure.net/"
+        name = username + "aws"
+
+        # Format the Key Vault URL
+        key_vault_url_aws = f"https://{name}.vault.azure.net/"
+
+        # Secret names
         access_key_secret = "Access-key"
         secret_access_key_secret = "secret-Access-key"
 
-        # Retrieve credentials from Azure Key Vault
-        credential_aws = DefaultAzureCredential()
-        secret_client_aws = SecretClient(vault_url=key_vault_url_aws, credential=credential_aws)
-
-        # Retrieve the secrets from Key Vault
-        aws_access_key = secret_client_aws.get_secret(access_key_secret).value
-        aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
-        regin = request.form.get('tenant_id')
-        # Set up Boto3 client with retrieved credentials and region
-        eks_client = boto3.client(
-            'eks',
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_access_key,
-            region_name=regin
-        )
-
-        clusters_data = []
-
-        # List ready or healthy EKS clusters in the specified AWS region
         try:
+            # Retrieve credentials from Azure Key Vault
+            credential_aws = DefaultAzureCredential()
+            secret_client_aws = SecretClient(vault_url=key_vault_url_aws, credential=credential_aws)
+
+            # Retrieve the secrets from Key Vault
+            aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+            aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
+
+            # Get AWS region from the form data
+            region = request.form.get('tenant_id')
+
+            # Set up Boto3 client with retrieved credentials and region
+            eks_client = boto3.client(
+                'eks',
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_access_key,
+                region_name=region
+            )
+
+            clusters_data = []
+
+            # List ready or healthy EKS clusters in the specified AWS region
             eks_clusters = eks_client.list_clusters()
             for cluster_name in eks_clusters['clusters']:
                 cluster_info = eks_client.describe_cluster(name=cluster_name)
                 if cluster_info['cluster']['status'] == 'ACTIVE':
                     clusters_data.append({"name": cluster_name})
-        except Exception as e:
-            print(f"Error listing ready or healthy clusters in us-east-1: {str(e)}")
 
-        return render_template('my-cluster-details-aws.html', username=username, cluster=clusters_data)
+            return render_template('my-cluster-details-aws.html', username=username, cluster=clusters_data)
+        except Exception as e:
+            # Print error details and traceback
+            print(f"Error in my_cluster_details_aws: {str(e)}")
+            traceback.print_exc()
+
+            # Return an error response or redirect as needed
+            return render_template('error.html', error_message="An error occurred. Please try again later.")
     else:
         return redirect(url_for('login'))
 
@@ -1500,7 +1506,7 @@ def json_submit_form_azure():
             print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation in Resource Group '{resource_group_name}'.")
             return json.dumps({
                 "message" : "Azure Key Vault '{}' already exists or encountered an error during creation in Resource Group '{}'".format(key_vault_name, resource_group_name)
-            }),409
+            }),200
  
         
         # Store secrets in Azure Key Vault
