@@ -1,0 +1,6 @@
+project = "test"
+Region = "us-east1"
+gke_name = "test"
+gke_version = "1.17"
+node_count = "2"
+cluster_type = "Public"
