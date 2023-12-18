@@ -1,3 +1,4 @@
+
 import boto3
 import traceback
 from packaging import version
@@ -646,8 +647,8 @@ def cluster_creation_status():
     else:
         return redirect(url_for('login'))
 
-@app.route('/cluster-details', methods=['GET', 'POST'])
-def cluster_details():
+@app.route('/creation-status-aws', methods=['GET', 'POST'])
+def creation_status_aws():
     if current_user.is_authenticated:
         username = current_user.username
         job_name = 'aws_infrastructure'
@@ -675,6 +676,36 @@ def cluster_details():
         return render_template('cluster-details.html', username=username, job_ids=job_ids)
     else:
         return redirect(url_for('login'))
+
+@app.route('/json-creation-status-aws', methods=['POST'])
+def json_creation_status_aws():
+        form = request.get_json()
+        username = form['username']
+        job_name = 'aws_infrastructure'
+
+        db_config = {
+            'host': '4.157.122.28',
+            'port': 3306,
+            'user': 'root',
+            'password': 'cockpitpro',
+            'database': 'jobinfo'
+        }
+
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+        query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+        cursor.execute(query)
+        job_ids = [result[0] for result in cursor.fetchall()]
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
+
+        return jsonify({"username": username, "job_ids": job_ids}), 200
+
+
 @app.route('/logs-aws', methods=['GET', 'POST'])
 def logs_aws():
     if current_user.is_authenticated:
@@ -702,6 +733,41 @@ def logs_aws():
         return render_template('logs-aws.html', username=username, logs=clean_logs)
     else:
         return redirect(url_for('login'))
+
+
+@app.route('/json-logs-aws', methods=['POST'])
+def json_logs_aws():
+        form = request.get_json()
+        username = form['username']
+        job_id = form['job_id']
+        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+
+        response = requests.get(job_url, headers=headers)
+
+    #    if response.status_code == 200:
+            # Assuming response.json() returns a dictionary
+        job_info = response.json()
+
+        log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+        log_response = requests.get(log_url, headers=headers)
+
+      #  if log_response.status_code == 200:
+        log_data = log_response.text
+
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+        clean_logs = ansi_escape.sub('', log_data)
+
+               # Return a JSON response
+        return jsonify({"username": username, "logs": clean_logs}), 200
+     #   else:
+    #         return jsonify({"error_message": "Failed to retrieve log data."}), 500
+       # else:
+        #    return jsonify({"error_message": "Failed to retrieve job information."}), 500
+
+
+
 @app.route('/logs-azure', methods=['GET', 'POST'])
 def logs_azure():
     if current_user.is_authenticated:
@@ -740,6 +806,33 @@ def logs_azure():
         return render_template('logs-azure.html', username=username, logs=clean_logs)
     else:
         return redirect(url_for('login'))
+
+@app.route('/json-logs-azure', methods=['GET', 'POST'])
+def json_logs_azure():
+        form = request.get_json()
+        username = form['username']
+        job_id = form['job_id']
+        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+
+        response = requests.get(job_url, headers=headers)
+
+ #       if response.status_code == 200:
+            # Assuming response.json() returns a dictionary
+        job_info = response.json()
+        log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+        log_response = requests.get(log_url, headers=headers)
+
+  #      if log_response.status_code == 200:
+        log_data = log_response.text
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+        clean_logs = ansi_escape.sub('', log_data)
+
+                # Return a JSON response with job_id included
+        return jsonify({"username": username, "job_id": job_id, "logs": clean_logs}),200
+
+
 @app.route('/logs-gcp', methods=['GET', 'POST'])
 def logs_gcp():
     if current_user.is_authenticated:
@@ -778,8 +871,36 @@ def logs_gcp():
         return render_template('logs-gcp.html', username=username, logs=clean_logs)
     else:
         return redirect(url_for('login'))
-@app.route('/cluster-details-azure', methods=['GET', 'POST'])
-def cluster_details_azure():
+
+@app.route('/json-logs-gcp', methods=[ 'POST'])
+def json_logs_gcp():
+        form = request.get_json()
+        username = form['username']
+        job_id = form['job_id']
+        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+
+        response = requests.get(job_url, headers=headers)
+
+#        if response.status_code == 200:
+            # Assuming response.json() returns a dictionary
+        job_info = response.json()
+
+        log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+        log_response = requests.get(log_url, headers=headers)
+
+#            if log_response.status_code == 200:
+        log_data = log_response.text
+
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+        clean_logs = ansi_escape.sub('', log_data)
+              # Return a JSON response with job_id included
+        return jsonify({"username": username, "job_id": job_id, "logs": clean_logs})
+
+
+@app.route('/creation-status-azure', methods=['GET', 'POST'])
+def creation_status_azure():
     if current_user.is_authenticated:
         username = current_user.username
         job_name = 'azure_infrastructure'
@@ -808,8 +929,38 @@ def cluster_details_azure():
     else:
         return redirect(url_for('login'))
 
-@app.route('/cluster-details-gcp', methods=['GET', 'POST'])
-def cluster_details_gcp():
+@app.route('/json-creation-status-azure', methods=['POST'])
+def json_creation_status_azure():
+        form = request.get_json()
+        username = form['username']
+        job_name = 'azure_infrastructure'
+
+        db_config = {
+            'host': '4.157.122.28',
+            'port': 3306,
+            'user': 'root',
+            'password': 'cockpitpro',
+            'database': 'jobinfo'
+        }
+
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+        query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+        cursor.execute(query)
+        job_ids = [result[0] for result in cursor.fetchall()]
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
+
+        return jsonify({"username": username, "job_ids": job_ids}), 200
+
+
+
+@app.route('/creation-status-gcp', methods=['GET', 'POST'])
+def creation_status_gcp():
     if current_user.is_authenticated:
         username = current_user.username
         job_name = 'gcp_infrastructure'
@@ -840,7 +991,35 @@ def cluster_details_gcp():
 
 
 
- 
+@app.route('/json-creation-status-gcp', methods=['POST'])
+def json_creation_status_gcp():
+        form = request.get_json()
+        username = form['username']
+        job_name = 'gcp_infrastructure'
+
+        db_config = {
+            'host': '4.157.122.28',
+            'port': 3306,
+            'user': 'root',
+            'password': 'cockpitpro',
+            'database': 'jobinfo'
+        }
+
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Fetch job IDs for username 'jini' and job_name 'gcp_infrastructure'
+        query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+        cursor.execute(query)
+        job_ids = [result[0] for result in cursor.fetchall()]
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
+
+        return jsonify({"username": username, "job_ids": job_ids})
+
+
 @app.route('/cloud')
 def cloud():
     return render_template('cloud.html')

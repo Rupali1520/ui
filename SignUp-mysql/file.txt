@@ -1,2 +1,3 @@
-aks_name = "None"
-resource_group = "None"
+eks-name = "akkk"
+region = "us-east-1"
+node = "akkk-eks-nodegroup"
