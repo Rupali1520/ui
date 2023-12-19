@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connect to Your EKS Cluster</title>
+</head>
+<body>
+    <h2>Connect to Your EKS Cluster</h2>
+    <p>To connect to your Amazon Elastic Kubernetes Service (EKS) cluster using the AWS CLI, follow these steps:</p>
+
+    <ol>
+        <li>Open a terminal or command prompt on your local machine.</li>
+        <li>Ensure that you have the AWS CLI installed. If not, you can download and install it from the official AWS CLI website: <a href="https://aws.amazon.com/cli/">AWS CLI</a>.</li>
+        <li>Run the following command to configure your AWS credentials:</li>
+    </ol>
+
+    <pre>
+        <code>
+          aws configure
+        </code>
+    </pre>
+
+    <p>Enter your AWS Access Key ID, Secret Access Key, default region, and output format when prompted.</p>
+
+    <ol start="4">
+        <li>After configuring the AWS CLI, run the following command to update your kubeconfig and connect to your EKS cluster:</li>
+    </ol>
+
+    <pre>
+        <code>
+          aws eks --region YOUR_REGION update-kubeconfig --name YOUR_CLUSTER_NAME
+        </code>
+    </pre>
+
+    <p>Replace <code>YOUR_REGION</code> with the AWS region where your EKS cluster is located and <code>YOUR_CLUSTER_NAME</code> with the name of your EKS cluster.</p>
+
+    <p>Now, you are connected to your EKS cluster, and you can use kubectl commands to interact with it.</p>
+</body>
+</html>

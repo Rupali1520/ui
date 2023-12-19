@@ -1,7 +1,6 @@
-<html>
+<!-- <html>
 <head>
     <title>Dashboard Cloud</title>
-    <!-- <link rel="stylesheet" href="final-dashboard.css"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='final-dashboard.css') }}">
 
 </head>
@@ -17,7 +16,7 @@
             <button onclick="showContent('myCluster')">My Cluster</button>
             <button onclick="showAWSCredentials()">Credential Details</button>
             <button onclick="showContent('clusterCreationStatus')">Cluster Creation Status</button>
-            <button onclick="showContent('myCluster')">Cost Optimisation</button>\
+            <button onclick="showContent('myCluster')">Cost Optimisation</button>
 
 
 
@@ -34,5 +33,96 @@
         
        </div>
      
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Cloud</title>
+    <!-- <link rel="stylesheet" href="final-dashboard.css"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='final-dashboard.css') }}">
+    <script>
+        function redirectToConnectPage() {
+            // Redirect to the page with details on how to connect using Azure CLI
+            window.location.href = '/connect-to-cluster-aws';
+        }
+    </script>
+
+    <style>
+        /* Style for the "i" symbol */
+        .info-icon {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+    
+        .info-icon::after {
+            content: "ℹ";
+            position: absolute;
+            top: 50%;
+            left: 110%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            color: #007bff; /* Change color as needed */
+        }
+    
+        .info-tooltip {
+            display: none;
+            position: absolute;
+            top: 0; /* Adjust the positioning relative to the info-icon */
+            left: 120%;
+            transform: translate(0, -50%);
+            background-color: #02386e; /* Change background color as needed */
+            padding: 5px;
+            border: 1px solid #ced4da; /* Change border color as needed */
+            border-radius: 3px;
+        }
+    
+        .info-icon:hover .info-tooltip {
+            display: block;
+        }
+    
+        /* Style for the disabled button */
+        .disabled-button {
+            background-color: #f8f9fa; /* Change background color as needed */
+            color: #08090a; /* Change text color as needed */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <form action="/" method="post" class="username-form">
+        <label for="username">Hello {{username}}!!</label>
+    </form>
+
+    <div class="container">
+        <div class="actions">
+            <h2>Actions</h2>
+            <button onclick="showContent('create_aks')">Create Cluster</button>
+            <button onclick="showContent('myCluster')">My Cluster</button>
+            <button onclick="showAWSCredentials()">Credential Details</button>
+            <button onclick="showContent('clusterCreationStatus')">Cluster Creation Status</button>
+            <button onclick="redirectToConnectPage()">Connect to Your Cluster</button>
+
+
+            <!-- Cloud Optimization Button with "i" symbol and tooltip -->
+            <div class="info-icon">
+                <button class="disabled-button" disabled>Cost Optimization</button>
+                <div class="info-tooltip">
+                    Available only in paid subscription.
+                </div>
+            </div>
+        </div>
+
+        <div class="details">
+            <h1>List of EKS Clusters</h1>
+            <ul>
+                {% for cluster in clusters %}
+                    <li>{{ cluster }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

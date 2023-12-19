@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Connect to Your GKE Cluster</title>
+</head>
+<body>
+    <h2>Connect to Your GKE Cluster</h2>
+    <p>To connect to your Google Kubernetes Engine (GKE) cluster using the `gcloud` CLI, follow these steps:</p>
+
+    <ol>
+        <li>Open a terminal or command prompt on your local machine.</li>
+        <li>Ensure that you have the `gcloud` CLI installed. If not, you can download and install it from the official Google Cloud SDK website: <a href="https://cloud.google.com/sdk/docs/install">Google Cloud SDK</a>.</li>
+        <li>Run the following command to authenticate `gcloud` with your Google Cloud account:</li>
+    </ol>
+
+    <pre>
+        <code>
+          gcloud auth login
+        </code>
+    </pre>
+
+    <p>This command will open a web browser prompting you to log in to your Google Cloud account.</p>
+
+    <ol start="4">
+        <li>After logging in, run the following command to update your kubeconfig and connect to your GKE cluster:</li>
+    </ol>
+
+    <pre>
+        <code>
+           gcloud container clusters get-credentials YOUR_CLUSTER_NAME --region YOUR_REGION
+        </code>
+    </pre>
+
+    <p>Replace <code>YOUR_CLUSTER_NAME</code> with the name of your GKE cluster and <code>YOUR_REGION</code> with the GCP region where your cluster resides.</p>
+
+    <p>Now, you are connected to your GKE cluster, and you can use `kubectl` commands to interact with it.</p>
+</body>
+</html>

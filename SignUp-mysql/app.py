@@ -155,9 +155,18 @@ def get_authenticated_user_id():
 #        return render_template('dashboard.html', username=username)
 #    else:
 #        return redirect(url_for('login'))  # Redirect to login if not authenticated
- 
 
+@app.route('/connect-to-cluster-gcp')
+def connect_to_cluster_gcp():
+    return render_template('connect-to-cluster-gcp.html') 
 
+@app.route('/connect-to-cluster-aws')
+def connect_to_cluster_aws():
+    return render_template('connect-to-cluster-aws.html')
+
+@app.route('/connect-to-cluster-az')
+def connect_to_cluster_az():
+    return render_template('connect-to-cluster-az.html')
 
 @app.route('/final-dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -548,63 +557,63 @@ def json_my_cluster_details_azure():
 
    
 
-@app.route('/json-my-cluster-details-gcp', methods=['GET', 'POST'])
+from flask import jsonify
+
+@app.route('/json-my-cluster-details-gcp', methods=['POST'])
 def json_my_cluster_details_gcp():
-    if current_user.is_authenticated:
-        username = current_user.username
-        name = username+"gcp"
-        key_vault_url_gcp = "https://{name}.vault.azure.net/"
-        # Azure Key Vault details for GCP
-    #    key_vault_url_gcp = f"https://{username}.vault.azure.net/"
-        gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
-
-        # Retrieve credentials from Azure Key Vault
-        credential_gcp = DefaultAzureCredential()
-        secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
-
-        # Retrieve the GCP credentials JSON from Key Vault
-        try:
-            gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
-
-            # Parse the JSON string into a dictionary
-            gcp_credentials_dict = json.loads(gcp_credentials_json)
-
-            # Use the parsed dictionary to create a service account credentials object
-            gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
-        except Exception as e:
-            print(f"Error retrieving or parsing GCP credentials: {e}")
-
-        # Use the service account credentials for the discovery build
-        service = discovery.build('container', 'v1', credentials=gcp_credentials)
-        gcp_projects = ['golden-plateau-401906']
-
-        # List to store GKE clusters data
-        clusters_data = []
-
-        for project in gcp_projects:
-            request = service.projects().locations().clusters().list(parent=f"projects/{project}/locations/-")
-            response = request.execute()
-
-            if 'clusters' in response:
-                for cluster in response['clusters']:
-                    clusters_data.append({project})
-        
-        # Return the list of GKE clusters data as a JSON response
-        return jsonify({"username": username, "clusters_data": clusters_data}), 200
-    else:
-        return jsonify({"error": "cluster not found"}), 401 
-
-
-
-
-@app.route('/my-cluster-details-gcp', methods=['POST'])
-def my_cluster_details_gcp():
+    # if current_user.is_authenticated:
+      
         form = request.get_json()
         username = form['username']
-        name = username+"gcp"
-        key_vault_url_gcp = f"https://{name}.vault.azure.net/"   
-   # Azure Key Vault details for GCP
-       # key_vault_url_gcp = f"https://{username}.vault.azure.net/"
+        name = username + "gcp"
+
+            # Azure Key Vault details for GCP
+        key_vault_url_gcp = f"https://{name}.vault.azure.net/"
+        gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
+        try:
+            # Retrieve credentials from Azure Key Vault
+                credential_gcp = DefaultAzureCredential()
+                secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
+
+                    # Retrieve the GCP credentials JSON from Key Vault
+                gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
+
+                    # Parse the JSON string into a dictionary
+                gcp_credentials_dict = json.loads(gcp_credentials_json)
+
+                    # Use the parsed dictionary to create a service account credentials object
+                gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
+                # except Exception as e:
+                #     print(f"Error retrieving or parsing GCP credentials: {e}")
+                    # Use the service account credentials for the discovery build
+                service = discovery.build('container', 'v1', credentials=gcp_credentials)
+                gcp_projects = ['golden-plateau-401906']
+
+                    # List to store GKE clusters data
+                clusters_data = []
+
+                for project in gcp_projects:
+                    requests = service.projects().locations().clusters().list(parent=f"projects/{project}/locations/-")
+                    response = requests.execute()
+
+                    if 'clusters' in response:
+                        for cluster in response['clusters']:
+                            clusters_data.append({cluster['name']})
+
+                    # Return JSON response
+                return jsonify({"username": username, "clusters_data": clusters_data}), 200
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return jsonify({"error_message": "cluster not found"}),200
+
+
+@app.route('/my-cluster-details-gcp', methods=['GET', 'POST'])
+def my_cluster_details_gcp():
+    if current_user.is_authenticated:
+        username = current_user.username
+        name = username +"gcp"
+        # Azure Key Vault details for GCP
+        key_vault_url_gcp = f"https://{name}.vault.azure.net/"
         gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
 
         # Retrieve credentials from Azure Key Vault
@@ -612,7 +621,6 @@ def my_cluster_details_gcp():
         secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
 
         # Retrieve the GCP credentials JSON from Key Vault
-        # try:
         gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
 
             # Parse the JSON string into a dictionary
@@ -620,8 +628,7 @@ def my_cluster_details_gcp():
 
             # Use the parsed dictionary to create a service account credentials object
         gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
-        # except Exception as e:
-        #     print(f"Error retrieving or parsing GCP credentials: {e}")
+        
 
         # Use the service account credentials for the discovery build
         service = discovery.build('container', 'v1', credentials=gcp_credentials)
@@ -636,8 +643,10 @@ def my_cluster_details_gcp():
 
             if 'clusters' in response:
                 for cluster in response['clusters']:
-                    clusters_data.append({project})
+                    clusters_data.append({cluster['name']})
         return render_template('my-cluster-details-gcp.html', username=username, clusters_data=clusters_data)
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/cluster-creation-status', methods=['GET', 'POST'])
 def cluster_creation_status():

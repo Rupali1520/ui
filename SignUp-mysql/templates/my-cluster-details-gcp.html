@@ -3,6 +3,12 @@
     <title>Dashboard Cloud</title>
     <!-- <link rel="stylesheet" href="final-dashboard.css"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='final-dashboard.css') }}">
+    <script>
+        function redirectToConnectPage() {
+            // Redirect to the page with details on how to connect using Azure CLI
+            window.location.href = '/connect-to-cluster-gcp';
+        }
+    </script>
 
 </head>
 <body>
@@ -17,7 +23,9 @@
             <button onclick="showContent('myCluster')">My Cluster</button>
             <button onclick="showAWSCredentials()">Credential Details</button>
             <button onclick="showContent('clusterCreationStatus')">Cluster Creation Status</button>
-            <button onclick="showContent('myCluster')">Cost Optimisation</button>\
+            <button onclick="showContent('myCluster')">Cost Optimisation</button>
+            <button onclick="redirectToConnectPage()">Connect to Your Cluster</button>
+
 
 
 
