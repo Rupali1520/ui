@@ -1,55 +1,51 @@
-<!-- <html>
-<head>
-    <title>Dashboard Cloud</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='final-dashboard.css') }}">
-
-</head>
-<body>
-    <form action="/" method="post" class="username-form">
-        <label for="username">Hello {{username}}!!</label>
-    </form>
-
-    <div class="container">
-        <div class="actions">
-            <h2>Actions</h2>
-            <button onclick="showContent('create_aks')">Create Cluster</button>
-            <button onclick="showContent('myCluster')">My Cluster</button>
-            <button onclick="showAWSCredentials()">Credential Details</button>
-            <button onclick="showContent('clusterCreationStatus')">Cluster Creation Status</button>
-            <button onclick="showContent('myCluster')">Cost Optimisation</button>
-
-
-
-        </div>
-
-       <div class="details">
-        <h1>List of EKS Clusters</h1>
-    <ul>
-        {% for cluster in clusters %}
-            <li>{{ cluster }}</li>
-        {% endfor %}
-    </ul>
-    
-        
-       </div>
-     
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Dashboard Cloud</title>
     <!-- <link rel="stylesheet" href="final-dashboard.css"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='final-dashboard.css') }}">
-    <script>
+    <!-- <script>
         function redirectToConnectPage() {
             // Redirect to the page with details on how to connect using Azure CLI
             window.location.href = '/connect-to-cluster-aws';
         }
-    </script>
+    </script> -->
+    <script>
+        function redirectToConnectPage() {
+            // Show the side pane
+            showSidePane();
+    
+            // Load the content of 'connect-to-cluster-aws.html' into the side pane dynamically
+            document.getElementById('sidePaneContent').src = '/connect-to-cluster-aws';
+        }
+    function showSidePane() {
+        var sidePane = document.getElementById('sidePane');
+        sidePane.classList.add('open-pane');
+    }
 
+    function hideSidePane() {
+        var sidePane = document.getElementById('sidePane');
+        sidePane.classList.remove('open-pane');
+    }
+
+    </script>
+    
     <style>
+         .side-pane {
+        position: fixed;
+        top: 0;
+        left: -50%; /* Initially off-screen */
+        width: 50%;
+        height: 100%;
+        background-color: #f5f5f5;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        transition: left 0.3s ease-out; /* Smooth transition */
+        padding: 20px;
+    }
+
+    .open-pane {
+        left: 0; /* Slide into view */
+    }
         /* Style for the "i" symbol */
         .info-icon {
             position: relative;
@@ -114,7 +110,14 @@
                 </div>
             </div>
         </div>
-
+        <div id="sidePane" class="side-pane">
+            <!-- iframe to load the content of 'connect-to-cluster-aws.html' -->
+            <iframe id="sidePaneContent" src="" width="150%" height="100%" frameborder="0"></iframe>
+        
+            <!-- Button to close the side pane -->
+            <button style="position: absolute; top: 80%; right: 10px;" onclick="hideSidePane()">Close</button>
+        </div>
+        
         <div class="details">
             <h1>List of EKS Clusters</h1>
             <ul>
