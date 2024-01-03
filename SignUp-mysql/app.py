@@ -637,10 +637,10 @@ def show_details_aws():
         return redirect(url_for('login'))
 
 def export_azure_credentials():
-    os.environ["AZURE_CLIENT_ID"] = "4b5bd0f1-f692-47dd-a186-c8bf1925a86b"
-    os.environ["AZURE_CLIENT_SECRET"] = "N6C8Q~IP4Ls3SeCGkN4gOI0zUYjAEhM0A_d4Aa1K"
-    os.environ["AZURE_TENANT_ID"] = "bddba232-ecf3-49b7-a5b2-7cd128fc6135"
-    os.environ["AZURE_SUBSCRIPTION_ID"] = "1ce8bf33-286c-42dd-b193-10c310dd14b7"
+    os.environ["AZURE_CLIENT_ID"] = "ad3b9e95-c03c-4728-840e-cbd8c75ea353"
+    os.environ["AZURE_CLIENT_SECRET"] = "p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI"
+    os.environ["AZURE_TENANT_ID"] = "097b85e8-2f0c-4726-a9d5-af15f7621ce5"
+    os.environ["AZURE_SUBSCRIPTION_ID"] = "f1aed9cb-fcad-472f-b14a-b1a0223fa5a5"
 export_azure_credentials()
 
 @app.route('/json-show-details-aws', methods=['POST'])
@@ -1529,7 +1529,7 @@ def json_submit_form_aws():
      ## starting the script
  
     # Azure Resource Group and Key Vault Configuration
-    resource_group_name = "rupali-rg"  
+    resource_group_name = "Cockpit"  
     key_vault_name = User_name+"aws"
     secrets_file_path = "./terraform.tfvars"
  
@@ -1540,10 +1540,10 @@ def json_submit_form_aws():
     resource_group_name = resource_group_name.replace("_", "-")
  
     
-    subscription_id = '1ce8bf33-286c-42dd-b193-10c310dd14b7'
-    client_id = '4b5bd0f1-f692-47dd-a186-c8bf1925a86b'
-    client_secret = 'N6C8Q~IP4Ls3SeCGkN4gOI0zUYjAEhM0A_d4Aa1K'
-    tenant_id = 'bddba232-ecf3-49b7-a5b2-7cd128fc6135'
+    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
+    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
+    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
+    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
     matching_secret_found = False
     credential = ClientSecretCredential(tenant_id, client_id, client_secret)
     keyvault_client = KeyVaultManagementClient(credential, subscription_id)
@@ -1667,7 +1667,7 @@ def submit_form_aws():
      ## starting the script
  
     # Azure Resource Group and Key Vault Configuration
-    resource_group_name = "rupali-rg"  
+    resource_group_name = "Cockpit"  
     key_vault_name = User_name+"aws"
     secrets_file_path = "./terraform.tfvars"
  
@@ -1678,10 +1678,10 @@ def submit_form_aws():
     resource_group_name = resource_group_name.replace("_", "-")
  
     
-    subscription_id = '1ce8bf33-286c-42dd-b193-10c310dd14b7'
-    client_id = '4b5bd0f1-f692-47dd-a186-c8bf1925a86b'
-    client_secret = 'N6C8Q~IP4Ls3SeCGkN4gOI0zUYjAEhM0A_d4Aa1K'
-    tenant_id = 'bddba232-ecf3-49b7-a5b2-7cd128fc6135'
+    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
+    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
+    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
+    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
     matching_secret_found = False
     credential = ClientSecretCredential(tenant_id, client_id, client_secret)
     keyvault_client = KeyVaultManagementClient(credential, subscription_id)
@@ -2060,7 +2060,7 @@ def submit_form_azure():
     ## starting the script
  
     # Azure Resource Group and Key Vault Configuration
-    resource_group_name = "rupali-rg"  
+    resource_group_name = "Cockpit"  
     key_vault_name = User_name+"azure"
     secrets_file_path = "./terraform.tfvars"
 
@@ -2080,10 +2080,10 @@ def submit_form_azure():
    # Replace underscores with hyphens in the Key Vault and Resource Group names
     key_vault_name = key_vault_name.replace("_", "-")
     resource_group_name = resource_group_name.replace("_", "-")    
-    subscription_id = '1ce8bf33-286c-42dd-b193-10c310dd14b7'
-    client_id = '4b5bd0f1-f692-47dd-a186-c8bf1925a86b'
-    client_secret = 'N6C8Q~IP4Ls3SeCGkN4gOI0zUYjAEhM0A_d4Aa1K'
-    tenant_id = 'bddba232-ecf3-49b7-a5b2-7cd128fc6135'
+    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
+    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
+    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
+    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
     matching_secret_found = False
     credential = ClientSecretCredential(tenant_id, client_id, client_secret)
     keyvault_client = KeyVaultManagementClient(credential, subscription_id)
@@ -2191,7 +2191,7 @@ def json_submit_form_azure():
     ## starting the script
  
     # Azure Resource Group and Key Vault Configuration
-    resource_group_name = "rupali-rg"  
+    resource_group_name = "Cockpit"  
     key_vault_name = User_name+"azure"
     secrets_file_path = "./terraform.tfvars"
 
@@ -2214,10 +2214,10 @@ def json_submit_form_azure():
    # Replace underscores with hyphens in the Key Vault and Resource Group names
     key_vault_name = key_vault_name.replace("_", "-")
     resource_group_name = resource_group_name.replace("_", "-")    
-    subscription_id = '1ce8bf33-286c-42dd-b193-10c310dd14b7'
-    client_id = '4b5bd0f1-f692-47dd-a186-c8bf1925a86b'
-    client_secret = 'N6C8Q~IP4Ls3SeCGkN4gOI0zUYjAEhM0A_d4Aa1K'
-    tenant_id = 'bddba232-ecf3-49b7-a5b2-7cd128fc6135'
+    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
+    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
+    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
+    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
     matching_secret_found = False
     credential = ClientSecretCredential(tenant_id, client_id, client_secret)
     keyvault_client = KeyVaultManagementClient(credential, subscription_id)
@@ -2626,7 +2626,7 @@ def submit_form_gcp():
     # Azure Key Vault and Secrets Configuration
     key_vault_name = User_name+"gcp"
  
-    resource_group_name = "rupali-rg"
+    resource_group_name = "Cockpit"
     location = "westus2"
     secrets_file_path = json_file.filename
  
@@ -2706,7 +2706,7 @@ def json_submit_form_gcp():
 
     # Azure Key Vault and Secrets Configuration
     key_vault_name = User_name+"gcp"
-    resource_group_name = "rupali-rg"
+    resource_group_name = "Cockpit"
     location = "westus2"
     secrets_file_path = file_path
 
