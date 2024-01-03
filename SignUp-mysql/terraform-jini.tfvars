@@ -1,7 +1,7 @@
-resource_group = "aks"
+resource_group = "manjari"
 Region = "East US"
-availability_zones = ["1"]
-aks_name = "aks-de3mo"
-aks_version = "1.27.1"
+availability_zones = []
+aks_name = "manjari"
+aks_version = "1.27"
 node_count = "1"
 cluster_type = "Public"

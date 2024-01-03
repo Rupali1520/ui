@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %} 
+<head>
+   <title>Jobs GCP</title>
+ </head>
+ <body>
+   <h1>Jobs GCP</h1>
+   {% for output in outputs %}
+       <p style="color: antiquewhite;">{{ output | safe }}</p>
+   {% endfor %}
+ </body>
+{% endblock content %}

@@ -1,4 +1,4 @@
-
+from flask import Flask, session
 import boto3
 import traceback
 from packaging import version
@@ -33,6 +33,10 @@ import hcl
 import re 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+import gitlab
+import concurrent.futures
+from gitlab.exceptions import GitlabAuthenticationError, GitlabGetError, GitlabListError
+from datetime import datetime
 
 gitlab_url = "https://gitlab.com"
 project_id = "51819357"
@@ -53,7 +57,7 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 app.config['WTF_CSRF_ENABLED'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://admin:cockpitpro@cockpit-database.c3xcuwqpwvp4.ap-south-1.rds.amazonaws.com:3306/cockpit'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://manjari:manjari@localhost:3306/creds'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -147,7 +151,434 @@ def get_authenticated_user_id():
     username = session.get('username')
     return username
  
- 
+
+@app.route('/jobs_aws', methods=['GET'])
+def jobs_aws():
+   response = requests.get('https://gitlab.com')
+   print(response.headers['Content-Type'])
+   username = current_user.username
+
+   job_name = "aws_infrastructure"
+
+   # Create a GitLab connection
+   try:
+       gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+   except GitlabAuthenticationError as e:
+       print("Authentication Error: ", str(e))
+       raise
+
+   # Get a specific project
+   try:
+       project = gl.projects.get(project_id)
+   except GitlabGetError as e:
+       print("Error getting project: ", str(e))
+       raise
+
+   # List all pipelines for the project
+   try:
+       pipelines = project.pipelines.list(all=True)
+   except GitlabListError as e:
+       print("Error listing pipelines: ", str(e))
+       raise
+
+   # Sort pipelines by creation time in descending order
+   pipelines.sort(key=lambda x: x.created_at, reverse=True)
+
+   # Function to fetch jobs for a pipeline
+   def fetch_jobs(pipeline):
+       jobs = pipeline.jobs.list()
+       job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
+       return job_ids
+
+   # Initialize outputs as an empty list
+   outputs = []
+
+   # Use a ThreadPoolExecutor to fetch jobs in parallel
+   with concurrent.futures.ThreadPoolExecutor() as executor:
+       future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
+       for future in concurrent.futures.as_completed(future_to_pipeline):
+           pipeline = future.result()
+           try:
+               results = future.result()
+               for result in results:
+                  if result[0] is not None:
+                      # Parse the timestamp string into a datetime object
+                      created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+                      # Format the datetime object into a human-readable string
+                      created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+                      output = f"Created At: {created_at_str}, Created By: {username}, EKS Status: {result[0].status}, Job Name: {job_name}, Job ID: <a href='/logs-aws?job-id={result[1]}'>{result[1]}</a>"
+                      outputs.append(output)
+                      print(output)
+                      print("\n---------------------------\n")
+           except Exception as exc:
+               print(f'{pipeline} generated an exception: {exc}')
+       executor.shutdown(wait=True)
+       
+   info = session.get('info', '')
+
+   return render_template('jobs_aws.html', outputs=outputs)
+
+@app.route('/json_jobs_aws', methods=['POST'])
+def json_jobs_aws():
+    try:
+        form = request.get_json()
+        username = form['username']
+        job_name = "aws_infrastructure"
+
+        # Create a GitLab connection
+        try:
+            gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+        except GitlabAuthenticationError as e:
+            print("Authentication Error: ", str(e))
+            raise
+
+        # Get a specific project
+        try:
+            project = gl.projects.get(project_id)
+        except GitlabGetError as e:
+            print("Error getting project: ", str(e))
+            raise
+
+        # List all pipelines for the project
+        try:
+            pipelines = project.pipelines.list(all=True)
+        except GitlabListError as e:
+            print("Error listing pipelines: ", str(e))
+            raise
+
+        # Sort pipelines by creation time in descending order
+        pipelines.sort(key=lambda x: x.created_at, reverse=True)
+
+        # Function to fetch jobs for a pipeline
+        def fetch_jobs(pipeline):
+            jobs = pipeline.jobs.list()
+            job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
+            return job_ids
+
+        # Initialize outputs as an empty list
+        outputs = []
+
+        # Use a ThreadPoolExecutor to fetch jobs in parallel
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
+            for future in concurrent.futures.as_completed(future_to_pipeline):
+                pipeline = future.result()
+                try:
+                    results = future.result()
+                    for result in results:
+                        if result[0] is not None:
+                            # Parse the timestamp string into a datetime object
+                            created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+                            # Format the datetime object into a human-readable string
+                            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+                            output = {
+                                "created_at": created_at_str,
+                                "created_by": username,
+                                "eks_status": result[0].status,
+                                "job_name": job_name,
+                                "job_id": result[1]
+                            }
+                            outputs.append(output)
+                            print(output)
+                            print("\n---------------------------\n")
+                except Exception as exc:
+                    print(f'{pipeline} generated an exception: {exc}')
+            executor.shutdown(wait=True)
+
+        # Return JSON response
+        return jsonify(outputs), 200
+
+    except Exception as e:
+        print(f"Error in json_jobs_aws: {str(e)}")
+        traceback.print_exc()
+        # Return an error response or redirect as needed
+        return jsonify({"error_message": "An error occurred. Please try again later."}), 500
+
+@app.route('/jobs_azure', methods=['GET'])
+def jobs_azure():
+   response = requests.get('https://gitlab.com')
+   print(response.headers['Content-Type'])
+   username = current_user.username
+
+   job_name = "azure_infrastructure"
+
+   # Create a GitLab connection
+   try:
+       gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+   except GitlabAuthenticationError as e:
+       print("Authentication Error: ", str(e))
+       raise
+
+   # Get a specific project
+   try:
+       project = gl.projects.get(project_id)
+   except GitlabGetError as e:
+       print("Error getting project: ", str(e))
+       raise
+
+   # List all pipelines for the project
+   try:
+       pipelines = project.pipelines.list(all=True)
+   except GitlabListError as e:
+       print("Error listing pipelines: ", str(e))
+       raise
+
+   # Sort pipelines by creation time in descending order
+   pipelines.sort(key=lambda x: x.created_at, reverse=True)
+
+   # Function to fetch jobs for a pipeline
+   def fetch_jobs(pipeline):
+       jobs = pipeline.jobs.list()
+       job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
+       return job_ids
+
+   # Initialize outputs as an empty list
+   outputs = []
+
+   # Use a ThreadPoolExecutor to fetch jobs in parallel
+   with concurrent.futures.ThreadPoolExecutor() as executor:
+       future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
+       for future in concurrent.futures.as_completed(future_to_pipeline):
+           pipeline = future.result()
+           try:
+               results = future.result()
+               for result in results:
+                  if result[0] is not None:
+                      # Parse the timestamp string into a datetime object
+                      created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+                      # Format the datetime object into a human-readable string
+                      created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+                      output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {result[0].status},  Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={result[1]}'>{result[1]}</a>"
+                      outputs.append(output)
+                      print(output)
+                      print("\n---------------------------\n")
+           except Exception as exc:
+               print(f'{pipeline} generated an exception: {exc}')
+       executor.shutdown(wait=True)
+       
+   info = session.get('info', '')
+
+   return render_template('jobs_azure.html', outputs=outputs)
+
+@app.route('/json_jobs_azure', methods=['POST'])
+def json_jobs_azure():
+    try:
+        form = request.get_json()
+        username = form['username']
+        job_name = "azure_infrastructure"
+
+        # Create a GitLab connection
+        try:
+            gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+        except GitlabAuthenticationError as e:
+            print("Authentication Error: ", str(e))
+            raise
+
+        # Get a specific project
+        try:
+            project = gl.projects.get(project_id)
+        except GitlabGetError as e:
+            print("Error getting project: ", str(e))
+            raise
+
+        # List all pipelines for the project
+        try:
+            pipelines = project.pipelines.list(all=True)
+        except GitlabListError as e:
+            print("Error listing pipelines: ", str(e))
+            raise
+
+        # Sort pipelines by creation time in descending order
+        pipelines.sort(key=lambda x: x.created_at, reverse=True)
+
+        # Function to fetch jobs for a pipeline
+        def fetch_jobs(pipeline):
+            jobs = pipeline.jobs.list()
+            job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
+            return job_ids
+
+        # Initialize outputs as an empty list
+        outputs = []
+
+        # Use a ThreadPoolExecutor to fetch jobs in parallel
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
+            for future in concurrent.futures.as_completed(future_to_pipeline):
+                pipeline = future.result()
+                try:
+                    results = future.result()
+                    for result in results:
+                        if result[0] is not None:
+                            # Parse the timestamp string into a datetime object
+                            created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+                            # Format the datetime object into a human-readable string
+                            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+                            output = {
+                                "created_at": created_at_str,
+                                "created_by": username,
+                                "aks_status": result[0].status,
+                                "job_name": job_name,
+                                "job_id": result[1]
+                            }
+                            outputs.append(output)
+                            print(output)
+                            print("\n---------------------------\n")
+                except Exception as exc:
+                    print(f'{pipeline} generated an exception: {exc}')
+            executor.shutdown(wait=True)
+
+        # Return JSON response
+        return jsonify(outputs), 200
+
+    except Exception as e:
+        print(f"Error in json_jobs_azure: {str(e)}")
+        traceback.print_exc()
+        # Return an error response or redirect as needed
+        return jsonify({"error_message": "An error occurred. Please try again later."}), 500
+
+@app.route('/jobs_gcp', methods=['GET'])
+def jobs_gcp():
+   response = requests.get('https://gitlab.com')
+   print(response.headers['Content-Type'])
+   username = current_user.username
+
+   job_name = "gcp_infrastructure"
+
+   # Create a GitLab connection
+   try:
+       gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+   except GitlabAuthenticationError as e:
+       print("Authentication Error: ", str(e))
+       raise
+
+   # Get a specific project
+   try:
+       project = gl.projects.get(project_id)
+   except GitlabGetError as e:
+       print("Error getting project: ", str(e))
+       raise
+
+   # List all pipelines for the project
+   try:
+       pipelines = project.pipelines.list(all=True)
+   except GitlabListError as e:
+       print("Error listing pipelines: ", str(e))
+       raise
+
+   # Sort pipelines by creation time in descending order
+   pipelines.sort(key=lambda x: x.created_at, reverse=True)
+
+   # Function to fetch jobs for a pipeline
+   def fetch_jobs(pipeline):
+       jobs = pipeline.jobs.list()
+       job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
+       return job_ids
+
+   # Initialize outputs as an empty list
+   outputs = []
+
+   # Use a ThreadPoolExecutor to fetch jobs in parallel
+   with concurrent.futures.ThreadPoolExecutor() as executor:
+       future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
+       for future in concurrent.futures.as_completed(future_to_pipeline):
+           pipeline = future.result()
+           try:
+               results = future.result()
+               for result in results:
+                  if result[0] is not None:
+                      # Parse the timestamp string into a datetime object
+                      created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+                      # Format the datetime object into a human-readable string
+                      created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+                      output = f"Created At: {created_at_str}, Created By: {username}, GKE Status: {result[0].status}, Job Name: {job_name}, Job ID: <a href='/logs-gcp?job-id={result[1]}'>{result[1]}</a>"
+                      outputs.append(output)
+                      print(output)
+                      print("\n---------------------------\n")
+           except Exception as exc:
+               print(f'{pipeline} generated an exception: {exc}')
+       executor.shutdown(wait=True)
+       
+   info = session.get('info', '')
+
+   return render_template('jobs_gcp.html', outputs=outputs)
+
+@app.route('/json_jobs_gcp', methods=['POST'])
+def json_jobs_gcp():
+    try:
+        form = request.get_json()
+        username = form['username']
+
+        job_name = "gcp_infrastructure"
+
+        # Create a GitLab connection
+        try:
+            gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+        except GitlabAuthenticationError as e:
+            print("Authentication Error: ", str(e))
+            raise
+
+        # Get a specific project
+        try:
+            project = gl.projects.get(project_id)
+        except GitlabGetError as e:
+            print("Error getting project: ", str(e))
+            raise
+
+        # List all pipelines for the project
+        try:
+            pipelines = project.pipelines.list(all=True)
+        except GitlabListError as e:
+            print("Error listing pipelines: ", str(e))
+            raise
+
+        # Sort pipelines by creation time in descending order
+        pipelines.sort(key=lambda x: x.created_at, reverse=True)
+
+        # Function to fetch jobs for a pipeline
+        def fetch_jobs(pipeline):
+            jobs = pipeline.jobs.list()
+            job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
+            return job_ids
+
+        # Initialize outputs as an empty list
+        outputs = []
+
+        # Use a ThreadPoolExecutor to fetch jobs in parallel
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
+            for future in concurrent.futures.as_completed(future_to_pipeline):
+                pipeline = future.result()
+                try:
+                    results = future.result()
+                    for result in results:
+                        if result[0] is not None:
+                            # Parse the timestamp string into a datetime object
+                            created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+                            # Format the datetime object into a human-readable string
+                            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
+                            output = {
+                                "created_at": created_at_str,
+                                "created_by": username,
+                                "gke_status": result[0].status,
+                                "job_name": job_name,
+                                "job_id": result[1]
+                            }
+                            outputs.append(output)
+                            print(output)
+                            print("\n---------------------------\n")
+                except Exception as exc:
+                    print(f'{pipeline} generated an exception: {exc}')
+            executor.shutdown(wait=True)
+
+        # Return JSON response
+        return jsonify(outputs), 200
+
+    except Exception as e:
+        print(f"Error in json_jobs_gcp: {str(e)}")
+        traceback.print_exc()
+        # Return an error response or redirect as needed
+        return jsonify({"error_message": "An error occurred. Please try again later."}), 500
+
 #@app.route('/dashboard')
 #def dashboard():
 #    if current_user.is_authenticated:
@@ -719,7 +1150,8 @@ def json_creation_status_aws():
 def logs_aws():
     if current_user.is_authenticated:
         username = current_user.username
-        job_id = request.form.get('job-id')
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job-id')
         access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
@@ -781,7 +1213,9 @@ def json_logs_aws():
 def logs_azure():
     if current_user.is_authenticated:
         username = current_user.username
-        job_id = request.form.get('job-id')
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job-id')
+
         access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
@@ -846,7 +1280,9 @@ def json_logs_azure():
 def logs_gcp():
     if current_user.is_authenticated:
         username = current_user.username
-        job_id = request.form.get('job-id')
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job-id')
+
         access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
@@ -1307,7 +1743,7 @@ def submit_form_aws():
     with open(secrets_file_path, "w"):         pass
  
     ## ending the script
-    return render_template('./create_aws.html')
+    return render_template('create_aws.html')
 
 @app.route('/aws_form', methods=['GET'])
 def aws_form():
@@ -1539,6 +1975,7 @@ cluster_type = "{cluster_type}"
 
 @app.route('/create_aws', methods=['POST'])
 def create_aws():
+
     # Retrieve form data
     eks_name = request.form.get('cluster_name')
     Region = request.form.get('region')
@@ -1592,10 +2029,10 @@ cluster_type = "{cluster_type}"
     print("Uploading tf file to gitlab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
-
-
     # You can also redirect the user to a success page if needed
-    return render_template('success.html')
+    session['info'] = 'Some information'
+
+    return redirect(url_for('jobs_aws'))
  
 #azure form
 @app.route('/azure')
@@ -1979,20 +2416,9 @@ private_cluster_enabled = "false"'''
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
 
-    #os.remove("terraform.tfvars")
-    # return json.dumps( {
-    #         "message": 'pipeline is triggered! You are now able to log in ',
-    #         "statusCode": 200
-    #     })
-    return jsonify(user_data)
+    session['info'] = 'Some information'
 
-    os.remove(file_name)
-    os.remove("user_name.json")
-    return json.dumps( {
-            "message": 'pipeline is triggered! You are now able to log in ',
-            "statusCode": 200
-        })
-
+    return redirect(url_for('jobs_azure'))
     # return render_template('success.html')
 
 
@@ -2409,7 +2835,9 @@ def create_gke():
 
     # You can also redirect the user to a success page if needed
     
-    return render_template('success.html')
+    session['info'] = 'Some information'
+
+    return redirect(url_for('jobs_gcp'))
 
 @app.route('/json_create_gke', methods=['POST'])
 def json_create_gke():
