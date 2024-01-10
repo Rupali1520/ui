@@ -1782,22 +1782,37 @@ def delete_aks():
     
     aks_name = request.form.get('aks_name')
     resource_group = request.form.get('resource_group')
-    
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+    gl.auth()
+    project = gl.projects.get(project_id)
     with open('file.txt', 'w') as f:
         f.write(f'aks_name = "{aks_name}"\n')
         f.write(f'resource_group = "{resource_group}"\n')
         
-    
+    try:
+        f = project.files.get(file_path='azure-delete/file.txt', ref=branch_name)
+    except gitlab.exceptions.GitlabGetError:
+        print("Error: Unable to retrieve file.")
+        exit()
+    file_content = base64.b64decode(f.content).decode("utf-8")
     file_path = f'azure-delete/file.txt'
     tf_config = f''' 
     aks_name = "{aks_name}"
     resourse_group = "{resource_group}"
     '''
-    print("Configuration:", tf_config)
-    print("Uploading tf file to gitlab")
-    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    print("Tf File uploaded successfully")
-    return render_template('success.html')
+    print(tf_config)
+    file_content_normalized = file_content.strip().replace('\r\n', '\n')
+    tf_config_normalized = tf_config.strip().replace('\r\n', '\n')
+    print(tf_config_normalized)
+    print(file_content_normalized)
+    if file_content_normalized == tf_config_normalized:
+        print("same contant")
+        return render_template('az_del.html')
+    else:
+        print("Uploading tf file to gitlab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+        return render_template('success.html')
 
 @app.route('/json_delete_aks', methods=['POST'])
 def json_delete_aks():
@@ -1825,21 +1840,35 @@ def delete_gke():
     gke_name = request.form.get('gke_name')
     region = request.form.get('region')
     projecct_id = request.form.get('project_id')
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+    gl.auth()
+    project = gl.projects.get(project_id)
     with open('file.txt', 'w') as f:
         f.write(f'gke-name = "{gke_name}"\n')
         f.write(f'region = "{region}"\n')
         f.write(f'project_id = "{projecct_id}"\n')
+    try:
+        f = project.files.get(file_path='gke-delete/file.txt', ref=branch_name)
+    except gitlab.exceptions.GitlabGetError:
+        print("Error: Unable to retrieve file.")
+        exit()
+    file_content = base64.b64decode(f.content).decode("utf-8")
     file_path = f'gke-delete/file.txt'
     tf_config = f''' 
     gke_name = "{gke_name}"
     region = "{region}"
     project_id = "{projecct_id}"
     '''
-    print("Configuration:", tf_config)
-    print("Uploading tf file to gitlab")
-    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    print("Tf File uploaded successfully")
-    return render_template('success.html')
+    file_content_normalized = file_content.strip().replace('\r\n', '\n')
+    tf_config_normalized = tf_config.strip().replace('\r\n', '\n')
+    if file_content_normalized == tf_config_normalized:
+        print("same contant")
+        return render_template('gcp_del.html')
+    else:
+        print("Uploading tf file to gitlab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+        return render_template('success.html')
 
 @app.route('/json_delete_gke', methods=['POST'])
 def json_delete_gke():
@@ -1852,7 +1881,7 @@ def json_delete_gke():
         f.write(f'gke-name = "{gke_name}"\n')
         f.write(f'region = "{region}"\n')
         f.write(f'project_id = "{project_id}"\n')
-
+    
     file_path = f'gke-delete/file.txt'
     tf_config = f''' 
     gke_name = "{gke_name}"
@@ -1880,22 +1909,35 @@ def delete_eks():
     eks_name = request.form.get('eks_name')
     Region = request.form.get('Region')
     Node = request.form.get('ng_name')
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+    gl.auth()
+    project = gl.projects.get(project_id)
     with open('file.txt', 'w') as f:
         f.write(f'eks-name = "{eks_name}"\n')
         f.write(f'region = "{Region}"\n')
         f.write(f'node = "{Node}"\n')
-    
+    try:
+        f = project.files.get(file_path='aws-delete/file.txt', ref=branch_name)
+    except gitlab.exceptions.GitlabGetError:
+        print("Error: Unable to retrieve file.")
+        exit()
+    file_content = base64.b64decode(f.content).decode("utf-8")
     file_path = f'aws-delete/file.txt'
     tf_config = f''' 
     eks_name = "{eks_name}"
     region = "{Region}"
     node = "{Node}"
     '''
-    print("Configuration:", tf_config)
-    print("Uploading tf file to gitlab")
-    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    print("Tf File uploaded successfully")
-    return render_template('success.html')
+    file_content_normalized = file_content.strip().replace('\r\n', '\n')
+    tf_config_normalized = tf_config.strip().replace('\r\n', '\n')
+    if file_content_normalized == tf_config_normalized:
+        print("same contant")
+        return render_template('aws_del.html')
+    else:
+        print("Uploading tf file to gitlab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+        return render_template('success.html')
 
 @app.route('/json_delete_eks', methods=['POST'])
 def json_delete_eks():
