@@ -57,7 +57,7 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 app.config['WTF_CSRF_ENABLED'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://manjari:manjari@localhost:3306/creds'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@20.207.117.166:3306/jobinfo'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -645,13 +645,14 @@ export_azure_credentials()
 
 @app.route('/json-show-details-aws', methods=['POST'])
 def json_show_details_aws():
+    try:
         form = request.get_json()
-        username =form['username']
-        name = username+"aws"
+        username = form['username']
+        name = username + "aws"
         key_vault_url = f"https://{name}.vault.azure.net/"
-    
+
         # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
 
         # Create a SecretClient using the Key Vault URL
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
@@ -667,7 +668,22 @@ def json_show_details_aws():
             "username": username
         }
 
-        return jsonify(response_data),200
+        return jsonify(response_data), 200
+
+    except ResourceNotFoundError:
+        # Handle the case when the Key Vault doesn't exist
+        error_msg = {"error_message": "Credentials not found."}
+        return jsonify(error_msg), 404
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
 
 @app.route('/show-details-azure', methods=['GET', 'POST'])
 def show_details_azure():
@@ -677,8 +693,8 @@ def show_details_azure():
         key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
-        
+        #credential = DefaultAzureCredential()
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
         # Create a SecretClient using the Key Vault URL
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
@@ -706,8 +722,8 @@ def json_show_details_azure():
         key_vault_url = f"https://{name}.vault.azure.net/"
     
         # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
-        
+        #credential = DefaultAzureCredential()
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
         # Create a SecretClient using the Key Vault URL
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
@@ -899,6 +915,10 @@ def json_my_cluster_details_aws():
                 cluster_info = eks_client.describe_cluster(name=cluster_name)
                 if cluster_info['cluster']['status'] == 'ACTIVE':
                     clusters_data.append({"name": cluster_name})
+
+            if not clusters_data:
+            # Handle the case when there are no clusters
+              return jsonify({"username": username, "clusters": [], "message": "No clusters available."}), 200
 
             return jsonify({"username": username, "clusters": clusters_data}),200
         except Exception as e:
@@ -1094,7 +1114,7 @@ def creation_status_aws():
         job_name = 'aws_infrastructure'
 
         db_config = {
-            'host': '4.157.122.28',
+            'host': '20.207.117.166',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1124,7 +1144,7 @@ def json_creation_status_aws():
         job_name = 'aws_infrastructure'
 
         db_config = {
-            'host': '4.157.122.28',
+            'host': '20.207.117.166',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1351,7 +1371,7 @@ def creation_status_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '4.157.122.28',
+            'host': '20.207.117.166',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1381,7 +1401,7 @@ def json_creation_status_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '4.157.122.28',
+            'host': '20.207.117.166',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1411,7 +1431,7 @@ def creation_status_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '4.157.122.28',
+            'host': '20.207.117.166',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1443,7 +1463,7 @@ def json_creation_status_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '4.157.122.28',
+            'host': '20.207.117.166',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2274,7 +2294,7 @@ def json_submit_form_azure():
             print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation in Resource Group '{resource_group_name}'.")
             return json.dumps({
                 "message" : "Azure Key Vault '{}' already exists or encountered an error during creation in Resource Group '{}'".format(key_vault_name, resource_group_name)
-            }),409
+            }),200
  
         
         # Store secrets in Azure Key Vault
@@ -2518,7 +2538,7 @@ node_count = "{node_count}"'''
     os.remove(file_name)
     os.remove("user_name.json")
     return json.dumps( {
-            "message": 'pipeline is triggered! aks will be created.. ',
+            "message": 'Creating AKS cluster. This may take some time. Please wait... ',
             "statusCode": 200
         })
 
