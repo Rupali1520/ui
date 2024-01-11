@@ -199,83 +199,165 @@ def jobs_aws():
 
 @app.route('/json_jobs_aws', methods=['POST'])
 def json_jobs_aws():
-    try:
-        form = request.get_json()
-        username = form['username']
-        job_name = "aws_infrastructure"
+    form = request.get_json()
+    username = form['username']
+    job_name = 'aws_infrastructure'
 
-        # Create a GitLab connection
-        try:
-            gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-        except GitlabAuthenticationError as e:
-            print("Authentication Error: ", str(e))
-            raise
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
 
-        # Get a specific project
-        try:
-            project = gl.projects.get(project_id)
-        except GitlabGetError as e:
-            print("Error getting project: ", str(e))
-            raise
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
 
-        # List all pipelines for the project
-        try:
-            pipelines = project.pipelines.list(all=True)
-        except GitlabListError as e:
-            print("Error listing pipelines: ", str(e))
-            raise
+    # Fetch job IDs for username 'jini' and job_name 'aws_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
 
-        # Sort pipelines by creation time in descending order
-        pipelines.sort(key=lambda x: x.created_at, reverse=True)
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
 
-        # Function to fetch jobs for a pipeline
-        def fetch_jobs(pipeline):
-            jobs = pipeline.jobs.list()
-            job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
-            return job_ids
+    project = gl.projects.get(project_id)
+    outputs = []
 
-        # Initialize outputs as an empty list
+    for job_id in job_ids:
+        # Get the job details
+        job = project.jobs.get(job_id)
+
+        # Get the job details
+        created_at = job.created_at
+        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        status = job.status
+
+        output = {
+            "created_at": created_at_str,
+            "created_by": username,
+            "aks_status": status,
+            "job_name": job_name,
+            "job_id": job_id,
+            "job_link": f"/logs-azure?job-id={job_id}"
+        }
+        outputs.append(output)
+        print(output)
+
+    final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
+
+    # Returning JSON response
+    return jsonify(final_job)
+
+
+
+@app.route('/jobs_aws_delete', methods=['GET'])
+def jobs_aws_delete():
+        username = current_user.username
+        job_name = 'aws_delete_infrastructure'
+
+        db_config = {
+            'host': '20.207.117.166',
+            'port': 3306,
+            'user': 'root',
+            'password': 'cockpitpro',
+            'database': 'jobinfo'
+        }
+
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+        query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+        cursor.execute(query)
+        job_ids = [result[0] for result in cursor.fetchall()]
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
+        gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+
+        
+        project = gl.projects.get(project_id)
         outputs = []
+        for job_id in job_ids:
+        # Get the job details
+            job = project.jobs.get(job_id)
+            
+            # Get the job details
+            created_at = job.created_at
+            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            status = job.status
+            output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
+            outputs.append(output)
+            print(output)
 
-        # Use a ThreadPoolExecutor to fetch jobs in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
-            for future in concurrent.futures.as_completed(future_to_pipeline):
-                pipeline = future.result()
-                try:
-                    results = future.result()
-                    for result in results:
-                        if result[0] is not None:
-                            # Parse the timestamp string into a datetime object
-                            created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
-                            # Format the datetime object into a human-readable string
-                            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
-                            output = {
-                                "created_at": created_at_str,
-                                "created_by": username,
-                                "eks_status": result[0].status,
-                                "job_name": job_name,
-                                "job_id": result[1]
-                            }
-                            outputs.append(output)
-                            print(output)
-                            print("\n---------------------------\n")
-                except Exception as exc:
-                    print(f'{pipeline} generated an exception: {exc}')
-            executor.shutdown(wait=True)
+        final_job = []
+        final_job= sorted(outputs, reverse=True)
+        return render_template('jobs_aws.html', outputs=outputs)
 
-        # Return JSON response
-        return jsonify(outputs), 200
+@app.route('/json_jobs_aws_delete', methods=['POST'])
+def json_jobs_aws_delete():
+    form = request.get_json()
+    username = form['username']
+    job_name = 'aws_delete_infrastructure'
 
-    except Exception as e:
-        print(f"Error in json_jobs_aws: {str(e)}")
-        traceback.print_exc()
-        # Return an error response or redirect as needed
-        return jsonify({"error_message": "An error occurred. Please try again later."}), 500
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+
+    # Fetch job IDs for username 'jini' and job_name 'aws_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+
+    project = gl.projects.get(project_id)
+    outputs = []
+
+    for job_id in job_ids:
+        # Get the job details
+        job = project.jobs.get(job_id)
+
+        # Get the job details
+        created_at = job.created_at
+        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        status = job.status
+
+        output = {
+            "created_at": created_at_str,
+            "created_by": username,
+            "aks_status": status,
+            "job_name": job_name,
+            "job_id": job_id,
+            "job_link": f"/logs-azure?job-id={job_id}"
+        }
+        outputs.append(output)
+        print(output)
+
+    final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
+
+    # Returning JSON response
+    return jsonify(final_job)
+
 
 @app.route('/jobs_azure', methods=['GET'])
 def jobs_azure():
-        username = current_user.username
+        username = current_user.username 
         job_name = 'azure_infrastructure'
 
         db_config = {
@@ -320,79 +402,160 @@ def jobs_azure():
 
 @app.route('/json_jobs_azure', methods=['POST'])
 def json_jobs_azure():
-    try:
-        form = request.get_json()
-        username = form['username']
-        job_name = "azure_infrastructure"
+    form = request.get_json()
+    username = form['username']
+    job_name = 'azure_infrastructure'
 
-        # Create a GitLab connection
-        try:
-            gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-        except GitlabAuthenticationError as e:
-            print("Authentication Error: ", str(e))
-            raise
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
 
-        # Get a specific project
-        try:
-            project = gl.projects.get(project_id)
-        except GitlabGetError as e:
-            print("Error getting project: ", str(e))
-            raise
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
 
-        # List all pipelines for the project
-        try:
-            pipelines = project.pipelines.list(all=True)
-        except GitlabListError as e:
-            print("Error listing pipelines: ", str(e))
-            raise
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
 
-        # Sort pipelines by creation time in descending order
-        pipelines.sort(key=lambda x: x.created_at, reverse=True)
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
 
-        # Function to fetch jobs for a pipeline
-        def fetch_jobs(pipeline):
-            jobs = pipeline.jobs.list()
-            job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
-            return job_ids
+    project = gl.projects.get(project_id)
+    outputs = []
+    
+    for job_id in job_ids:
+        # Get the job details
+        job = project.jobs.get(job_id)
+        
+        # Get the job details
+        created_at = job.created_at
+        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        status = job.status
+        
+        output = {
+            "created_at": created_at_str,
+            "created_by": username,
+            "aks_status": status,
+            "job_name": job_name,
+            "job_id": job_id,
+            "job_link": f"/logs-azure?job-id={job_id}"
+        }
+        outputs.append(output)
+        print(output)
 
-        # Initialize outputs as an empty list
+    final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
+    
+    # Returning JSON response
+    return jsonify(final_job)
+
+
+@app.route('/jobs_azure_delete', methods=['GET'])
+def jobs_azure_delete():
+        username = current_user.username 
+        job_name = 'azure_delete_infrastructure'
+
+        db_config = {
+            'host': '20.207.117.166',
+            'port': 3306,
+            'user': 'root',
+            'password': 'cockpitpro',
+            'database': 'jobinfo'
+        }
+
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+        query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+        cursor.execute(query)
+        job_ids = [result[0] for result in cursor.fetchall()]
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
+        gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+
+        
+        project = gl.projects.get(project_id)
         outputs = []
+        for job_id in job_ids:
+        # Get the job details
+            job = project.jobs.get(job_id)
+            
+            # Get the job details
+            created_at = job.created_at
+            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            status = job.status
+            output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
+            outputs.append(output)
+            print(output)
 
-        # Use a ThreadPoolExecutor to fetch jobs in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
-            for future in concurrent.futures.as_completed(future_to_pipeline):
-                pipeline = future.result()
-                try:
-                    results = future.result()
-                    for result in results:
-                        if result[0] is not None:
-                            # Parse the timestamp string into a datetime object
-                            created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
-                            # Format the datetime object into a human-readable string
-                            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
-                            output = {
-                                "created_at": created_at_str,
-                                "created_by": username,
-                                "aks_status": result[0].status,
-                                "job_name": job_name,
-                                "job_id": result[1]
-                            }
-                            outputs.append(output)
-                            print(output)
-                            print("\n---------------------------\n")
-                except Exception as exc:
-                    print(f'{pipeline} generated an exception: {exc}')
-            executor.shutdown(wait=True)
+        final_job = []
+        final_job= sorted(outputs, reverse=True)
+        return render_template('jobs_azure.html', outputs=final_job)
 
-        # Return JSON response
-        return jsonify(outputs), 200
+@app.route('/json_jobs_azure_delete', methods=['POST'])
+def json_jobs_azure_delete():
+    form = request.get_json()
+    username = form['username']
+    job_name = 'azure_delete_infrastructure'
 
-    except Exception as e:
-        print(f"Error in json_jobs_azure: {str(e)}")
-        traceback.print_exc()
-        # Return an error response or redirect as needed
-        return jsonify({"error_message": "An error occurred. Please try again later."}), 500
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+
+    project = gl.projects.get(project_id)
+    outputs = []
+    
+    for job_id in job_ids:
+        # Get the job details
+        job = project.jobs.get(job_id)
+        
+        # Get the job details
+        created_at = job.created_at
+        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        status = job.status
+        
+        output = {
+            "created_at": created_at_str,
+            "created_by": username,
+            "aks_status": status,
+            "job_name": job_name,
+            "job_id": job_id,
+            "job_link": f"/logs-azure?job-id={job_id}"
+        }
+        outputs.append(output)
+        print(output)
+
+    final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
+    
+    # Returning JSON response
+    return jsonify(final_job)
+
 
 @app.route('/jobs_gcp', methods=['GET'])
 def jobs_gcp():
@@ -442,88 +605,162 @@ def jobs_gcp():
 
 @app.route('/json_jobs_gcp', methods=['POST'])
 def json_jobs_gcp():
-    try:
-        form = request.get_json()
-        username = form['username']
+    form = request.get_json()
+    username = form['username']
+    job_name = 'gcp_infrastructure'
 
-        job_name = "gcp_infrastructure"
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
 
-        # Create a GitLab connection
-        try:
-            gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-        except GitlabAuthenticationError as e:
-            print("Authentication Error: ", str(e))
-            raise
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
 
-        # Get a specific project
-        try:
-            project = gl.projects.get(project_id)
-        except GitlabGetError as e:
-            print("Error getting project: ", str(e))
-            raise
+    # Fetch job IDs for username 'jini' and job_name 'gcp_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
 
-        # List all pipelines for the project
-        try:
-            pipelines = project.pipelines.list(all=True)
-        except GitlabListError as e:
-            print("Error listing pipelines: ", str(e))
-            raise
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
 
-        # Sort pipelines by creation time in descending order
-        pipelines.sort(key=lambda x: x.created_at, reverse=True)
+    project = gl.projects.get(project_id)
+    outputs = []
 
-        # Function to fetch jobs for a pipeline
-        def fetch_jobs(pipeline):
-            jobs = pipeline.jobs.list()
-            job_ids = [(pipeline, job.id) for job in jobs if job.name == job_name]
-            return job_ids
+    for job_id in job_ids:
+        # Get the job details
+        job = project.jobs.get(job_id)
 
-        # Initialize outputs as an empty list
+        # Get the job details
+        created_at = job.created_at
+        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        status = job.status
+
+        output = {
+            "created_at": created_at_str,
+            "created_by": username,
+            "aks_status": status,
+            "job_name": job_name,
+            "job_id": job_id,
+            "job_link": f"/logs-azure?job-id={job_id}"
+        }
+        outputs.append(output)
+        print(output)
+
+    final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
+
+    # Returning JSON response
+    return jsonify(final_job)
+
+
+
+@app.route('/jobs_gcp_delete', methods=['GET'])
+def jobs_gcp_delete():
+        username = current_user.username
+        job_name = 'gcp_delete_infrastructure'
+
+        db_config = {
+            'host': '20.207.117.166',
+            'port': 3306,
+            'user': 'root',
+            'password': 'cockpitpro',
+            'database': 'jobinfo'
+        }
+
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+        query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+        cursor.execute(query)
+        job_ids = [result[0] for result in cursor.fetchall()]
+
+        # Close the database connection
+        cursor.close()
+        connection.close()
+        gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+
+        
+        project = gl.projects.get(project_id)
         outputs = []
+        for job_id in job_ids:
+        # Get the job details
+            job = project.jobs.get(job_id)
+            
+            # Get the job details
+            created_at = job.created_at
+            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            status = job.status
+            output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
+            outputs.append(output)
+            print(output)
 
-        # Use a ThreadPoolExecutor to fetch jobs in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future_to_pipeline = {executor.submit(fetch_jobs, pipeline): pipeline for pipeline in pipelines}
-            for future in concurrent.futures.as_completed(future_to_pipeline):
-                pipeline = future.result()
-                try:
-                    results = future.result()
-                    for result in results:
-                        if result[0] is not None:
-                            # Parse the timestamp string into a datetime object
-                            created_at = datetime.strptime(result[0].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
-                            # Format the datetime object into a human-readable string
-                            created_at_str = created_at.strftime('%Y-%m-%d %H:%M:%S')
-                            output = {
-                                "created_at": created_at_str,
-                                "created_by": username,
-                                "gke_status": result[0].status,
-                                "job_name": job_name,
-                                "job_id": result[1]
-                            }
-                            outputs.append(output)
-                            print(output)
-                            print("\n---------------------------\n")
-                except Exception as exc:
-                    print(f'{pipeline} generated an exception: {exc}')
-            executor.shutdown(wait=True)
+        final_job = []
+        final_job= sorted(outputs, reverse=True)
+        
+        return render_template('jobs_gcp.html', outputs=outputs)
 
-        # Return JSON response
-        return jsonify(outputs), 200
+@app.route('/json_jobs_gcp_delete', methods=['POST'])
+def json_jobs_gcp_delete():
+    form = request.get_json()
+    username = form['username']
+    job_name = 'gcp_delete_infrastructure'
 
-    except Exception as e:
-        print(f"Error in json_jobs_gcp: {str(e)}")
-        traceback.print_exc()
-        # Return an error response or redirect as needed
-        return jsonify({"error_message": "An error occurred. Please try again later."}), 500
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
 
-#@app.route('/dashboard')
-#def dashboard():
-#    if current_user.is_authenticated:
-#        username = current_user.username
-#        return render_template('dashboard.html', username=username)
-#    else:
-#        return redirect(url_for('login'))  # Redirect to login if not authenticated
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+
+    # Fetch job IDs for username 'jini' and job_name 'gcp_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+
+    project = gl.projects.get(project_id)
+    outputs = []
+
+    for job_id in job_ids:
+        # Get the job details
+        job = project.jobs.get(job_id)
+
+        # Get the job details
+        created_at = job.created_at
+        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        status = job.status
+
+        output = {
+            "created_at": created_at_str,
+            "created_by": username,
+            "aks_status": status,
+            "job_name": job_name,
+            "job_id": job_id,
+            "job_link": f"/logs-azure?job-id={job_id}"
+        }
+        outputs.append(output)
+        print(output)
+
+    final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
+
+    # Returning JSON response
+    return jsonify(final_job)
+
 
 @app.route('/connect-to-cluster-gcp')
 def connect_to_cluster_gcp():
