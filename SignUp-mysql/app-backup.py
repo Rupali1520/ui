@@ -24,7 +24,7 @@ from flask import Flask, jsonify
 
 gitlab_url = "https://gitlab.com"
 project_id = "51066584"
-access_token = "glpat-G3RiTBsw4oQopnHQi9-x"
+access_token = "glpat-LryS1Hu_2ZX17MSGhgkz"
 branch_name = "main"
 
 app = Flask(__name__, static_url_path='/static')

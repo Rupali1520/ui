@@ -17,6 +17,9 @@ from google.cloud import container_v1
 from googleapiclient import discovery
 from google.oauth2 import service_account
 import mysql.connector
+import pytz
+
+import time
 import os
 import subprocess
 import random
@@ -40,7 +43,7 @@ from datetime import datetime
 
 gitlab_url = "https://gitlab.com"
 project_id = "51819357"
-access_token = "glpat-F_rqbsXAufc1wbeoh-zn"    
+access_token = "glpat-LryS1Hu_2ZX17MSGhgkz"    
 branch_name = "featurebrach1"
 app = Flask(__name__, static_url_path='/static')
 
@@ -156,7 +159,7 @@ def get_authenticated_user_id():
 def jobs_aws():
         username = current_user.username
         job_name = 'aws_infrastructure'
-
+ 
         db_config = {
             'host': '20.207.117.166',
             'port': 3306,
@@ -164,20 +167,20 @@ def jobs_aws():
             'password': 'cockpitpro',
             'database': 'jobinfo'
         }
-
+ 
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-
+ 
         # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
         query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
         cursor.execute(query)
         job_ids = [result[0] for result in cursor.fetchall()]
-
+ 
         # Close the database connection
         cursor.close()
         connection.close()
         gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-
+ 
         
         project = gl.projects.get(project_id)
         outputs = []
@@ -186,23 +189,26 @@ def jobs_aws():
             job = project.jobs.get(job_id)
             
             # Get the job details
-            created_at = job.created_at
-            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            created_at = job.created_at_str
+            utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')
             status = job.status
             output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
             outputs.append(output)
             print(output)
-
+ 
         final_job = []
         final_job= sorted(outputs, reverse=True)
         return render_template('jobs_aws.html', outputs=outputs)
-
+ 
 @app.route('/json_jobs_aws', methods=['POST'])
 def json_jobs_aws():
     form = request.get_json()
     username = form['username']
     job_name = 'aws_infrastructure'
-
+ 
     db_config = {
         'host': '20.207.117.166',
         'port': 3306,
@@ -210,55 +216,58 @@ def json_jobs_aws():
         'password': 'cockpitpro',
         'database': 'jobinfo'
     }
-
+ 
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-
+ 
     # Fetch job IDs for username 'jini' and job_name 'aws_infrastructure'
     query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
     cursor.execute(query)
     job_ids = [result[0] for result in cursor.fetchall()]
-
+ 
     # Close the database connection
     cursor.close()
     connection.close()
     gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-
+ 
     project = gl.projects.get(project_id)
     outputs = []
-
+ 
     for job_id in job_ids:
         # Get the job details
         job = project.jobs.get(job_id)
-
+ 
         # Get the job details
         created_at = job.created_at
-        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        utc_time = utc_time.replace(tzinfo=pytz.UTC)
+        ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+        created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')        
         status = job.status
-
+ 
         output = {
             "created_at": created_at_str,
             "created_by": username,
-            "aks_status": status,
+            "eks_status": status,
             "job_name": job_name,
             "job_id": job_id,
             "job_link": f"/logs-azure?job-id={job_id}"
         }
         outputs.append(output)
         print(output)
-
+ 
     final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
-
+ 
     # Returning JSON response
     return jsonify(final_job)
-
-
-
+ 
+ 
+ 
 @app.route('/jobs_aws_delete', methods=['GET'])
 def jobs_aws_delete():
         username = current_user.username
-        job_name = 'aws_delete_infrastructure'
-
+        job_name = 'delete_aws_infrastructure'
+ 
         db_config = {
             'host': '20.207.117.166',
             'port': 3306,
@@ -266,20 +275,20 @@ def jobs_aws_delete():
             'password': 'cockpitpro',
             'database': 'jobinfo'
         }
-
+ 
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-
+ 
         # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
         query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
         cursor.execute(query)
         job_ids = [result[0] for result in cursor.fetchall()]
-
+ 
         # Close the database connection
         cursor.close()
         connection.close()
         gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-
+ 
         
         project = gl.projects.get(project_id)
         outputs = []
@@ -289,22 +298,29 @@ def jobs_aws_delete():
             
             # Get the job details
             created_at = job.created_at
-            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')
             status = job.status
             output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
             outputs.append(output)
             print(output)
-
+ 
         final_job = []
         final_job= sorted(outputs, reverse=True)
         return render_template('jobs_aws.html', outputs=outputs)
 
+
+
+
+ 
 @app.route('/json_jobs_aws_delete', methods=['POST'])
 def json_jobs_aws_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'aws_delete_infrastructure'
-
+    job_name = 'delete_aws_infrastructure'
+ 
     db_config = {
         'host': '20.207.117.166',
         'port': 3306,
@@ -312,45 +328,48 @@ def json_jobs_aws_delete():
         'password': 'cockpitpro',
         'database': 'jobinfo'
     }
-
+ 
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-
+ 
     # Fetch job IDs for username 'jini' and job_name 'aws_infrastructure'
     query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
     cursor.execute(query)
     job_ids = [result[0] for result in cursor.fetchall()]
-
+ 
     # Close the database connection
     cursor.close()
     connection.close()
     gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
-
+ 
     project = gl.projects.get(project_id)
     outputs = []
-
+ 
     for job_id in job_ids:
         # Get the job details
         job = project.jobs.get(job_id)
-
+ 
         # Get the job details
         created_at = job.created_at
-        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        utc_time = utc_time.replace(tzinfo=pytz.UTC)
+        ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+        created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')
         status = job.status
-
+ 
         output = {
             "created_at": created_at_str,
             "created_by": username,
-            "aks_status": status,
+            "eks_status": status,
             "job_name": job_name,
             "job_id": job_id,
             "job_link": f"/logs-azure?job-id={job_id}"
         }
         outputs.append(output)
         print(output)
-
+ 
     final_job = sorted(outputs, key=lambda x: x['created_at'], reverse=True)
-
+ 
     # Returning JSON response
     return jsonify(final_job)
 
@@ -390,7 +409,10 @@ def jobs_azure():
             
             # Get the job details
             created_at = job.created_at
-            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')            
             status = job.status
             output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
             outputs.append(output)
@@ -436,7 +458,10 @@ def json_jobs_azure():
         
         # Get the job details
         created_at = job.created_at
-        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        utc_time = utc_time.replace(tzinfo=pytz.UTC)
+        ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+        created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')            
         status = job.status
         
         output = {
@@ -491,7 +516,10 @@ def jobs_azure_delete():
             
             # Get the job details
             created_at = job.created_at
-            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')            
             status = job.status
             output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
             outputs.append(output)
@@ -537,7 +565,10 @@ def json_jobs_azure_delete():
         
         # Get the job details
         created_at = job.created_at
-        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        utc_time = utc_time.replace(tzinfo=pytz.UTC)
+        ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+        created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')            
         status = job.status
         
         output = {
@@ -592,7 +623,10 @@ def jobs_gcp():
             
             # Get the job details
             created_at = job.created_at
-            created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            utc_time = utc_time.replace(tzinfo=pytz.UTC)
+            ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')            
             status = job.status
             output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
             outputs.append(output)
@@ -639,7 +673,10 @@ def json_jobs_gcp():
 
         # Get the job details
         created_at = job.created_at
-        created_at_str = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        utc_time = utc_time.replace(tzinfo=pytz.UTC)
+        ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
+        created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')            
         status = job.status
 
         output = {
@@ -1347,7 +1384,7 @@ def logs_aws():
         username = current_user.username
         # job_id = request.form.get('job-id')
         job_id = request.args.get('job-id')
-        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
 
@@ -1376,7 +1413,7 @@ def json_logs_aws():
         form = request.get_json()
         username = form['username']
         job_id = form['job_id']
-        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
 
@@ -1411,7 +1448,7 @@ def logs_azure():
         # job_id = request.form.get('job-id')
         job_id = request.args.get('job-id')
 
-        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
 
@@ -1450,7 +1487,7 @@ def json_logs_azure():
         form = request.get_json()
         username = form['username']
         job_id = form['job_id']
-        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
 
@@ -1478,7 +1515,7 @@ def logs_gcp():
         # job_id = request.form.get('job-id')
         job_id = request.args.get('job-id')
 
-        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
 
@@ -1517,7 +1554,7 @@ def json_logs_gcp():
         form = request.get_json()
         username = form['username']
         job_id = form['job_id']
-        access_token = 'glpat-PygP9prTXpfPbJT2ie4w'
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
         job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
         headers = {'PRIVATE-TOKEN': access_token}
 
@@ -2572,15 +2609,15 @@ def create_aks():
     aks_version = request.form.get('aks_version')
     node_count = request.form.get('node_count')
     cluster_type = request.form.get('cluster_type')
-
-
+ 
+ 
     file_name = "./user_name.json"
-
+ 
     with open(file_name, 'r') as file:
         user_data = json.load(file)
-
+ 
         
-
+ 
     user_data["rg_name"] = resource_group
     user_data["Region"] = Region
     user_data["availability_zones"] = availability_zones
@@ -2588,42 +2625,42 @@ def create_aks():
     user_data["aks_version"] = aks_version
     user_data["node_count"] = node_count
     user_data["cluster_type"] = cluster_type
-
-
+ 
+ 
     print("user name is:", user_data["user"])
     user = Data(username=user_data["user"], cloudname='azure', clustername=user_data["aks_name"])
     db.session.add(user)
     db.session.commit()
     file_name = f'terraform-{user_data["user"]}.tfvars'
     
-
+ 
     
     aks_version = version.parse(aks_version)
     
     # Initialize variables for vm_name and vm_pass
     vm_name = None
     vm_pass = None
-
+ 
     # Process form data based on Cluster Type
     if cluster_type == 'Private':
         vm_name = request.form.get('vm_name')
         vm_pass = request.form.get('vm_pass')
-
+ 
     # Convert availability_zones to a string containing an array
     availability_zones_str = '[' + ', '.join(['"' + zone + '"' for zone in availability_zones]) + ']'
-
+ 
     with open(file_name, 'w') as f:
         f.write(f'resource_group = "{resource_group}"\n')
         f.write(f'Region = "{Region}"\n')
         f.write(f'availability_zones = {availability_zones_str}\n')
-        f.write(f'aks_name = "{aks_name}"\n') 
+        f.write(f'aks_name = "{aks_name}"\n')
         f.write(f'aks_version = "{aks_version}"\n')
         f.write(f'node_count = "{node_count}"\n')
         f.write(f'cluster_type = "{cluster_type}"\n')
         if vm_name is not None:
             f.write(f'vm_name = "{vm_name}"\n')
             f.write(f'vm_pass = "{vm_pass}"\n')
-
+ 
     file_path = f'templates/user-data/{file_name}'
     file_path = f'azure/template/{file_name}'
     if vm_name is not None:
@@ -2652,12 +2689,50 @@ private_cluster_enabled = "false"'''
     print("Uploading tf file to gitlab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
-
+ 
     session['info'] = 'Some information'
-
+ 
+    # Continuously check and store AKS cluster status in the background
+    check_and_store_aks_cluster_status(username=user_data["user"],resource_group=resource_group,aks_name=aks_name,Region=Region)
+ 
     return redirect(url_for('jobs_azure'))
     # return render_template('success.html')
-
+ 
+def check_and_store_aks_cluster_status(username, resource_group,aks_name, Region):
+    while True:
+        # Check the AKS cluster status (replace this with your actual implementation)
+        aks_cluster_created = check_aks_cluster_creation_status(aks_name,resource_group)
+ 
+        if aks_cluster_created:
+            # Store AKS cluster information in the database
+            store_aks_cluster_info(username, 'azure', resource_group, Region, aks_name)
+            break  # Break the loop once the AKS cluster is created
+ 
+        # Add a sleep interval to avoid continuous checking and reduce resource usage
+        time.sleep(60)
+ 
+def check_aks_cluster_creation_status(aks_name, resource_group):
+    try:
+        # Use the az CLI to get AKS cluster details
+        cmd = f'az aks show --resource-group {resource_group} --name {aks_name}'
+        subprocess.run(cmd, check=True, shell=True)
+        
+        # If the subprocess runs successfully, the cluster exists
+        return True
+    except subprocess.CalledProcessError:
+        # If an error occurs, the cluster does not exist
+        return False
+ 
+def store_aks_cluster_info(username, cloudname, resource_group, region, aks_name):
+    cluster_info = aks_cluster(
+        username=username,
+        cloudname=cloudname,
+        resource_group=resource_group,
+        region=region,
+        aks_name=aks_name
+    )
+    db.session.add(cluster_info)
+    db.session.commit()
 
  
 @app.route('/json_create_aks', methods=['POST'])
