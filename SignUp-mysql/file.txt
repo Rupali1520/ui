@@ -1,2 +1,2 @@
-aks_name = "somya"
-resource_group = "somya"
+aks_name = "cockpitaks"
+resource_group = "cockpitaks"

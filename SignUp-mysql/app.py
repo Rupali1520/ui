@@ -83,7 +83,16 @@ class User(db.Model,UserMixin):
  
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
-
+class aks_cluster(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False)
+    cloudname = db.Column(db.String(255), nullable=False)
+    resource_group = db.Column(db.String(255), nullable=False)
+    region = db.Column(db.String(255), nullable=False)
+    aks_name = db.Column(db.String(255), nullable=False)
+ 
+    def __repr__(self):
+        return f"aks_cluster('{self.username}')"
 class Data(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False)
@@ -2024,7 +2033,44 @@ def delete_aks():
         print("Uploading tf file to gitlab")
         upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
         print("Tf File uploaded successfully")
+        file_name = "./user_name.json"
+ 
+        with open(file_name, 'r') as file:
+            user_data = json.load(file)
+        check_and_delete_aks(username=user_data["user"],resource_group=resource_group,aks_name=aks_name)
         return render_template('success.html')
+def check_and_delete_aks(username, resource_group, aks_name):
+    while True:
+        aks_status = get_aks_cluster_status(aks_name, resource_group)
+        if aks_status:
+            cluster_info = aks_cluster.query.filter_by(aks_name=aks_name, resource_group=resource_group).one_or_none()
+            if cluster_info:             # If the row exists, delete it            
+              db.session.delete(cluster_info)             
+              db.session.commit()
+              break
+        time.sleep(60)
+        
+def get_aks_cluster_status(aks_name, resource_group):
+    # Use DefaultAzureCredential to authenticate with Azure
+    credential = DefaultAzureCredential()
+ 
+    # Create a ContainerServiceClient to interact with AKS
+    client = ContainerServiceClient(credential, "f1aed9cb-fcad-472f-b14a-b1a0223fa5a5")
+ 
+    # Get AKS cluster details
+    cluster = client.managed_clusters.get(resource_group, aks_name)
+ 
+    # Get the AKS cluster provisioning sta
+    provisioning_state = cluster.provisioning_state.lower()
+ 
+    if provisioning_state == "deleting":
+        print("----------")
+        return True
+ 
+    else:
+        print("not delete")
+        return False  # You can handle other states as needed
+
 
 @app.route('/json_delete_aks', methods=['POST'])
 def json_delete_aks():
@@ -2044,6 +2090,11 @@ def json_delete_aks():
 
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
+    file_name = "./user_name.json"
+ 
+    with open(file_name, 'r') as file:
+            user_data = json.load(file)
+    check_and_delete_aks(username=user_data["user"],resource_group=resource_group,aks_name=aks_name)
     response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline, please wait some time...'}
     return jsonify(response_data), 200
     
@@ -2825,7 +2876,7 @@ node_count = "{node_count}"'''
     print("Uploading tf file to gitlab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
-
+    check_and_store_aks_cluster_status(username=user_data["user"],resource_group=resource_group,aks_name=aks_name,Region=Region)
 
     os.remove(file_name)
     os.remove("user_name.json")
