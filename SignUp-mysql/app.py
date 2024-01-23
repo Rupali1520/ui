@@ -1260,39 +1260,33 @@ def my_cluster_details_azure():
         return redirect(url_for('login'))
 
 
-@app.route('/json-my-cluster-details-azure', methods=['POST'])
-def json_my_cluster_details_azure():
-        form = request.get_json()
-        username = form['username']
-        #name = username + "azure"
-        #key_vault_url = f"https://{name}.vault.azure.net/"
-        #secrets = ["client-id", "client-secret", "subscription-id", "tenant-id"]
-
-        try:
-            # Retrieve credentials from Azure Key Vault
-         #   credential = DefaultAzureCredential()
-            # Create a SecretClient using the Key Vault URL
-          #  secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
-
-            # Retrieve the secrets from Key Vault
-           # secrets_values = {secret: secret_client.get_secret(secret).value for secret in secrets}
-
-            # Set up the ContainerServiceClient with retrieved credentials
- #           aks_client = ContainerServiceClient(credential, secrets_values["subscription-id"])
-#
-            # Your logic to list Azure Kubernetes Service Clusters here
-  #          aks_clusters = [cluster.name for cluster in aks_client.managed_clusters.list()]
-            aks_names = aks_cluster.query.filter_by(username=username).with_entities(aks_cluster.aks_name).all()
-            aks_names = [result[0] for result in aks_names]
-            # Handle the exception appropriately, e.g., return an error page
-            return jsonify({"username":username, "aks_cluster": aks_names}), 200
-        except Exception as e:
-            print(f"Error: {str(e)}")
 
    
 
 from flask import jsonify
+@app.route('/json-my-cluster-details-azure', methods=['POST'])
+def json_my_cluster_details_azure():
+    form = request.get_json()
+    username = form['username']
 
+    try:
+        # Query the database to get AKS cluster names for the given username
+        aks_names = aks_cluster.query.filter_by(username=username).with_entities(aks_cluster.aks_name).all()
+        
+        # Extract AKS names from the query result
+        aks_names = [result[0] for result in aks_names]
+
+        # Check if there are no AKS clusters available
+        if not aks_names:
+            return jsonify({"username": username, "message": "No AKS clusters available for the given user."}), 200
+
+        # Return JSON response with AKS cluster names
+        return jsonify({"username": username, "aks_cluster": aks_names}), 200
+
+    except Exception as e:
+        # Handle other exceptions (e.g., database connection error)
+        print(f"Error: {str(e)}")
+        return jsonify({"error_message": "An error occurred while fetching AKS cluster details."}), 500
 @app.route('/json-my-cluster-details-gcp', methods=['POST'])
 def json_my_cluster_details_gcp():
     # if current_user.is_authenticated:

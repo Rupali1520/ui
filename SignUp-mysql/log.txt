@@ -8,7 +8,7 @@ Press CTRL+C to quit
  * Restarting with stat
  * Debugger is active!
  * Debugger PIN: 313-028-363
-203.189.252.74 - - [23/Jan/2024 13:05:24] "OPTIONS /json-show-details-aws HTTP/1.1" 200 -
-203.189.252.74 - - [23/Jan/2024 13:05:25] "POST /json-show-details-aws HTTP/1.1" 200 -
-203.189.252.74 - - [23/Jan/2024 13:05:32] "OPTIONS /json-show-details-gcp HTTP/1.1" 200 -
-203.189.252.74 - - [23/Jan/2024 13:05:33] "POST /json-show-details-gcp HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 13:13:33] "OPTIONS /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 13:13:34] "POST /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 13:13:39] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 13:13:39] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
