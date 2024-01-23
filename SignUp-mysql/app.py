@@ -894,7 +894,7 @@ def json_show_details_aws():
     except ResourceNotFoundError:
         # Handle the case when the Key Vault doesn't exist
         error_msg = {"error_message": "Credentials not found."}
-        return jsonify(error_msg), 404
+        return jsonify(error_msg), 200
 
     except HttpResponseError as e:
         # Handle other HTTP response errors

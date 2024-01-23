@@ -24,3 +24,1806 @@ Press CTRL+C to quit
 203.189.252.74 - - [23/Jan/2024 11:26:49] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
 203.189.252.74 - - [23/Jan/2024 11:27:10] "OPTIONS /JsonLogin HTTP/1.1" 200 -
 203.189.252.74 - - [23/Jan/2024 11:27:11] "POST /JsonLogin HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:33:50] "OPTIONS /json_jobs_azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:33:57] "POST /json_jobs_azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:07] "OPTIONS /json-creation-status-aws HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:07] "POST /json-creation-status-aws HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:12] "OPTIONS /json-logs-aws HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:12] "POST /json-logs-aws HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1424, in json_logs_aws
+    username = form['username']
+KeyError: 'username'
+45.115.105.117 - - [23/Jan/2024 11:35:18] "OPTIONS /json-creation-status-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:18] "POST /json-creation-status-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:21] "OPTIONS /json-logs-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:35:23] "POST /json-logs-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:36:28] "OPTIONS /json-creation-status-gcp HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:36:28] "POST /json-creation-status-gcp HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:36:36] "OPTIONS /json-creation-status-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:36:36] "POST /json-creation-status-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:38:06] "OPTIONS /json-logs-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:38:07] "POST /json-logs-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:41:32] "OPTIONS /json-creation-status-aws HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:41:32] "POST /json-creation-status-aws HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:47:10] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f665ca4c910>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 11:47:15] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+45.115.105.117 - - [23/Jan/2024 11:47:32] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:47:50] "OPTIONS /json-my-cluster-details-gcp HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:47:55] "POST /json-my-cluster-details-gcp HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:48:01] "OPTIONS /json-my-cluster-details-gcp HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:48:06] "POST /json-my-cluster-details-gcp HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:48:18] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:48:18] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 11:49:01] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f665c960d90>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 11:49:06] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+203.189.252.74 - - [23/Jan/2024 11:51:00] "OPTIONS /json-creation-status-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:51:00] "POST /json-creation-status-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:54:01] "OPTIONS /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:54:02] "POST /JsonLogin HTTP/1.1" 500 -
+ * Detected change in '/home/cockpit/ui/SignUp-mysql/app.py', reloading
+Configuration:  
+    aks_name = "aysuh"
+    resource_group = "ayush"
+    
+Uploading tf file to GitLab
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 56, 'encoding': 'base64', 'content_sha256': '056dceb73f1e9c06e5bd80ccdd0eeae1b9adc0356b60fdbd4aba08f6dc4b7ff8', 'ref': 'featurebrach1', 'blob_id': '2788f1679aea798d69ec0d0e947cb822588f5f51', 'commit_id': '567e5c956b3b8727d64df6ff771318e0d8ef5d8d', 'last_commit_id': '567e5c956b3b8727d64df6ff771318e0d8ef5d8d', 'execute_filemode': False, 'content': 'IAogICAgYWtzX25hbWUgPSAiYWtzcyIKICAgIHJlc291cmNlX2dyb3VwID0gImFrc3MiCiAgICA='}
+Tf File uploaded successfully
+not delete
+----------
+{'created_at': '2024-01-23 13:08:30', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5987295629', 'job_link': '/logs-azure?job-id=5987295629'}
+{'created_at': '2024-01-23 13:35:30', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5987464548', 'job_link': '/logs-azure?job-id=5987464548'}
+{'created_at': '2024-01-23 13:37:15', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5987476273', 'job_link': '/logs-azure?job-id=5987476273'}
+{'created_at': '2024-01-23 14:15:04', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5987744153', 'job_link': '/logs-azure?job-id=5987744153'}
+{'created_at': '2024-01-23 15:09:50', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988246493', 'job_link': '/logs-azure?job-id=5988246493'}
+{'created_at': '2024-01-23 15:17:58', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988330785', 'job_link': '/logs-azure?job-id=5988330785'}
+{'created_at': '2024-01-23 15:12:55', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988277302', 'job_link': '/logs-azure?job-id=5988277302'}
+{'created_at': '2024-01-23 15:25:42', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988410822', 'job_link': '/logs-azure?job-id=5988410822'}
+{'created_at': '2024-01-23 15:30:35', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988464945', 'job_link': '/logs-azure?job-id=5988464945'}
+{'created_at': '2024-01-23 15:31:05', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988471118', 'job_link': '/logs-azure?job-id=5988471118'}
+{'created_at': '2024-01-23 15:38:41', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988564535', 'job_link': '/logs-azure?job-id=5988564535'}
+{'created_at': '2024-01-23 15:48:01', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988654086', 'job_link': '/logs-azure?job-id=5988654086'}
+{'created_at': '2024-01-23 16:21:21', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988987090', 'job_link': '/logs-azure?job-id=5988987090'}
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f665ca4c910>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f665cac5760>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f665cac5880>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f665c960d90>: Failed to establish a new connection: [Errno -2] Name or service not known
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 313-028-363
+203.189.252.74 - - [23/Jan/2024 11:54:29] "OPTIONS /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:54:29] "POST /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:54:42] "OPTIONS /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:54:42] "POST /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:55:23] "OPTIONS /json_create_aks HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 11:59:03] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831e4fd070>: Failed to establish a new connection: [Errno -2] Name or service not known
+203.189.252.74 - - [23/Jan/2024 11:59:08] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 11:59:45] "OPTIONS /json-creation-status-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 11:59:45] "POST /json-creation-status-azure HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 12:01:27] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:01:27] "POST /json-my-cluster-details-azure HTTP/1.1" 500 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1487, in full_dispatch_request
+    return self.finalize_request(rv)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1506, in finalize_request
+    response = self.make_response(rv)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1801, in make_response
+    raise TypeError(
+TypeError: The view function for 'json_my_cluster_details_azure' did not return a valid response. The function either returned None or ended without a return statement.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
+    sock.sendall(pkt)
+  File "/usr/lib/python3.8/ssl.py", line 1233, in sendall
+    v = self.send(byte_view[count:])
+  File "/usr/lib/python3.8/ssl.py", line 1202, in send
+    return self._sslobj.write(data)
+BrokenPipeError: [Errno 32] Broken pipe
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1119, in _rollback_impl
+    self.engine.dialect.do_rollback(self.connection)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 692, in do_rollback
+    dbapi_connection.rollback()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 1270, in rollback
+    self._execute_query("ROLLBACK")
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 1282, in _execute_query
+    self.cmd_query(query)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 843, in cmd_query
+    result = self._handle_result(self._send_cmd(ServerCmd.QUERY, query))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 455, in _send_cmd
+    self._socket.send(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 621, in send
+    return self._netbroker.send(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 219, in send
+    self._send_pkt(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 165, in _send_pkt
+    raise OperationalError(
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2206, in wsgi_app
+    ctx.pop(error)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/ctx.py", line 417, in pop
+    app_ctx.pop(exc)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/ctx.py", line 255, in pop
+    self.app.do_teardown_appcontext(exc)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2063, in do_teardown_appcontext
+    self.ensure_sync(func)(exc)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_sqlalchemy/extension.py", line 448, in _teardown_session
+    self.session.remove()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/orm/scoping.py", line 262, in remove
+    self.registry().close()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2468, in close
+    self._close_impl(invalidate=False)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 2537, in _close_impl
+    transaction.close(invalidate)
+  File "<string>", line 2, in close
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/orm/state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/orm/session.py", line 1362, in close
+    transaction.close()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2576, in close
+    self._do_close()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2714, in _do_close
+    self._close_impl()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2700, in _close_impl
+    self._connection_rollback_impl()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2692, in _connection_rollback_impl
+    self.connection._rollback_impl()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1121, in _rollback_impl
+    self._handle_dbapi_exception(e, None, None, None, None)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2343, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1119, in _rollback_impl
+    self.engine.dialect.do_rollback(self.connection)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 692, in do_rollback
+    dbapi_connection.rollback()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 1270, in rollback
+    self._execute_query("ROLLBACK")
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 1282, in _execute_query
+    self.cmd_query(query)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/opentelemetry/context_propagation.py", line 77, in wrapper
+    return method(cnx, *args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 843, in cmd_query
+    result = self._handle_result(self._send_cmd(ServerCmd.QUERY, query))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/connection.py", line 455, in _send_cmd
+    self._socket.send(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 621, in send
+    return self._netbroker.send(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 219, in send
+    self._send_pkt(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 165, in _send_pkt
+    raise OperationalError(
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+203.189.252.74 - - [23/Jan/2024 12:02:36] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:02:36] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:03:25] "OPTIONS /json_create_aks HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'cptrial' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'cptrial' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+45.115.105.117 - - [23/Jan/2024 12:03:34] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831dc04ca0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:03:39] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+203.189.252.74 - - [23/Jan/2024 12:04:10] "OPTIONS /json_create_aks HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'cptrial' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'cptrial' could not be found.
+ERROR: (ResourceNotFound) The Resource 'Microsoft.ContainerService/managedClusters/cptrial' under resource group 'cptrial' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix
+Code: ResourceNotFound
+Message: The Resource 'Microsoft.ContainerService/managedClusters/cptrial' under resource group 'cptrial' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix
+45.115.105.117 - - [23/Jan/2024 12:04:31] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831dc044f0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:04:36] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+45.115.105.117 - - [23/Jan/2024 12:05:10] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+{
+  "aadProfile": null,
+  "addonProfiles": null,
+  "agentPoolProfiles": [
+    {
+      "availabilityZones": null,
+      "capacityReservationGroupId": null,
+      "count": 1,
+      "creationData": null,
+      "currentOrchestratorVersion": "1.27.7",
+      "enableAutoScaling": true,
+      "enableEncryptionAtHost": false,
+      "enableFips": false,
+      "enableNodePublicIp": false,
+      "enableUltraSsd": false,
+      "gpuInstanceProfile": null,
+      "hostGroupId": null,
+      "kubeletConfig": null,
+      "kubeletDiskType": "OS",
+      "linuxOsConfig": null,
+      "maxCount": 4,
+      "maxPods": 110,
+      "minCount": 1,
+      "mode": "System",
+      "name": "default",
+      "networkProfile": null,
+      "nodeImageVersion": "AKSUbuntu-2204gen2containerd-202401.09.0",
+      "nodeLabels": null,
+      "nodePublicIpPrefixId": null,
+      "nodeTaints": null,
+      "orchestratorVersion": "1.27.7",
+      "osDiskSizeGb": 128,
+      "osDiskType": "Managed",
+      "osSku": "Ubuntu",
+      "osType": "Linux",
+      "podSubnetId": null,
+      "powerState": {
+        "code": "Running"
+      },
+      "provisioningState": "Creating",
+      "proximityPlacementGroupId": null,
+      "scaleDownMode": "Delete",
+      "scaleSetEvictionPolicy": null,
+      "scaleSetPriority": null,
+      "spotMaxPrice": null,
+      "tags": null,
+      "type": "VirtualMachineScaleSets",
+      "upgradeSettings": {
+        "drainTimeoutInMinutes": null,
+        "maxSurge": null
+      },
+      "vmSize": "Standard_DS2_v2",
+      "vnetSubnetId": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourceGroups/cptrial/providers/Microsoft.Network/virtualNetworks/vnet01/subnets/subnet01",
+      "workloadRuntime": null
+    }
+  ],
+  "apiServerAccessProfile": null,
+  "autoScalerProfile": {
+    "balanceSimilarNodeGroups": "false",
+    "expander": "random",
+    "maxEmptyBulkDelete": "10",
+    "maxGracefulTerminationSec": "600",
+    "maxNodeProvisionTime": "15m",
+    "maxTotalUnreadyPercentage": "45",
+    "newPodScaleUpDelay": "0s",
+    "okTotalUnreadyCount": "3",
+    "scaleDownDelayAfterAdd": "10m",
+    "scaleDownDelayAfterDelete": "10s",
+    "scaleDownDelayAfterFailure": "3m",
+    "scaleDownUnneededTime": "10m",
+    "scaleDownUnreadyTime": "20m",
+    "scaleDownUtilizationThreshold": "0.5",
+    "scanInterval": "10s",
+    "skipNodesWithLocalStorage": "false",
+    "skipNodesWithSystemPods": "true"
+  },
+  "autoUpgradeProfile": {
+    "nodeOsUpgradeChannel": null,
+    "upgradeChannel": "none"
+  },
+  "azureMonitorProfile": {
+    "metrics": {
+      "enabled": false,
+      "kubeStateMetrics": null
+    }
+  },
+  "azurePortalFqdn": "myakscluster-uh4hbe18.portal.hcp.centralindia.azmk8s.io",
+  "currentKubernetesVersion": "1.27.7",
+  "disableLocalAccounts": false,
+  "diskEncryptionSetId": null,
+  "dnsPrefix": "myakscluster",
+  "enablePodSecurityPolicy": null,
+  "enableRbac": true,
+  "extendedLocation": null,
+  "fqdn": "myakscluster-uh4hbe18.hcp.centralindia.azmk8s.io",
+  "fqdnSubdomain": null,
+  "httpProxyConfig": null,
+  "id": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourcegroups/cptrial/providers/Microsoft.ContainerService/managedClusters/cptrial",
+  "identity": {
+    "delegatedResources": null,
+    "principalId": "2f807c26-5029-4f96-aa22-2464b66de6d4",
+    "tenantId": "097b85e8-2f0c-4726-a9d5-af15f7621ce5",
+    "type": "SystemAssigned",
+    "userAssignedIdentities": null
+  },
+  "identityProfile": {
+    "kubeletidentity": {
+      "clientId": "59b5273f-6de0-4bff-9d9d-3bf44bd124a1",
+      "objectId": "ff0166b4-e6f5-434e-b7db-867214bb8d41",
+      "resourceId": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourcegroups/MC_cptrial_cptrial_centralindia/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cptrial-agentpool"
+    }
+  },
+  "kubernetesVersion": "1.27",
+  "linuxProfile": null,
+  "location": "centralindia",
+  "maxAgentPools": 100,
+  "name": "cptrial",
+  "networkProfile": {
+    "dnsServiceIp": "192.168.1.1",
+    "ipFamilies": [
+      "IPv4"
+    ],
+    "loadBalancerProfile": {
+      "allocatedOutboundPorts": null,
+      "backendPoolType": "nodeIPConfiguration",
+      "effectiveOutboundIPs": [
+        {
+          "id": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourceGroups/MC_cptrial_cptrial_centralindia/providers/Microsoft.Network/publicIPAddresses/c86d68c1-bb05-4050-89b9-a84b19c14287",
+          "resourceGroup": "MC_cptrial_cptrial_centralindia"
+        }
+      ],
+      "enableMultipleStandardLoadBalancers": null,
+      "idleTimeoutInMinutes": null,
+      "managedOutboundIPs": {
+        "count": 1,
+        "countIpv6": null
+      },
+      "outboundIPs": null,
+      "outboundIpPrefixes": null
+    },
+    "loadBalancerSku": "standard",
+    "natGatewayProfile": null,
+    "networkDataplane": null,
+    "networkMode": null,
+    "networkPlugin": "kubenet",
+    "networkPluginMode": null,
+    "networkPolicy": null,
+    "outboundType": "loadBalancer",
+    "podCidr": "172.16.0.0/22",
+    "podCidrs": [
+      "172.16.0.0/22"
+    ],
+    "serviceCidr": "192.168.0.0/16",
+    "serviceCidrs": [
+      "192.168.0.0/16"
+    ]
+  },
+  "nodeResourceGroup": "MC_cptrial_cptrial_centralindia",
+  "oidcIssuerProfile": {
+    "enabled": false,
+    "issuerUrl": null
+  },
+  "podIdentityProfile": null,
+  "powerState": {
+    "code": "Running"
+  },
+  "privateFqdn": null,
+  "privateLinkResources": null,
+  "provisioningState": "Creating",
+  "publicNetworkAccess": null,
+  "resourceGroup": "cptrial",
+  "resourceUid": "65afab5db7816b0001d0e633",
+  "securityProfile": {
+    "azureKeyVaultKms": null,
+    "defender": null,
+    "imageCleaner": {
+      "enabled": false,
+      "intervalHours": 48
+    },
+    "workloadIdentity": null
+  },
+  "serviceMeshProfile": null,
+  "servicePrincipalProfile": {
+    "clientId": "msi"
+  },
+  "sku": {
+    "name": "Base",
+    "tier": "Free"
+  },
+  "storageProfile": {
+    "blobCsiDriver": null,
+    "diskCsiDriver": {
+      "enabled": true
+    },
+    "fileCsiDriver": {
+      "enabled": true
+    },
+    "snapshotController": {
+      "enabled": true
+    }
+  },
+  "supportPlan": "KubernetesOfficial",
+  "systemData": null,
+  "type": "Microsoft.ContainerService/ManagedClusters",
+  "upgradeSettings": null,
+  "windowsProfile": null,
+  "workloadAutoScalerProfile": {
+    "keda": null,
+    "verticalPodAutoscaler": null
+  }
+}
+203.189.252.74 - - [23/Jan/2024 12:05:15] "POST /json_create_aks HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:05:15] "OPTIONS /json_jobs_azure HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831d9f39a0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:05:15] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+203.189.252.74 - - [23/Jan/2024 12:05:25] "POST /json_jobs_azure HTTP/1.1" 200 -
+{
+  "aadProfile": null,
+  "addonProfiles": null,
+  "agentPoolProfiles": [
+    {
+      "availabilityZones": null,
+      "capacityReservationGroupId": null,
+      "count": 1,
+      "creationData": null,
+      "currentOrchestratorVersion": "1.27.7",
+      "enableAutoScaling": true,
+      "enableEncryptionAtHost": false,
+      "enableFips": false,
+      "enableNodePublicIp": false,
+      "enableUltraSsd": false,
+      "gpuInstanceProfile": null,
+      "hostGroupId": null,
+      "kubeletConfig": null,
+      "kubeletDiskType": "OS",
+      "linuxOsConfig": null,
+      "maxCount": 4,
+      "maxPods": 110,
+      "minCount": 1,
+      "mode": "System",
+      "name": "default",
+      "networkProfile": null,
+      "nodeImageVersion": "AKSUbuntu-2204gen2containerd-202401.09.0",
+      "nodeLabels": null,
+      "nodePublicIpPrefixId": null,
+      "nodeTaints": null,
+      "orchestratorVersion": "1.27.7",
+      "osDiskSizeGb": 128,
+      "osDiskType": "Managed",
+      "osSku": "Ubuntu",
+      "osType": "Linux",
+      "podSubnetId": null,
+      "powerState": {
+        "code": "Running"
+      },
+      "provisioningState": "Creating",
+      "proximityPlacementGroupId": null,
+      "scaleDownMode": "Delete",
+      "scaleSetEvictionPolicy": null,
+      "scaleSetPriority": null,
+      "spotMaxPrice": null,
+      "tags": null,
+      "type": "VirtualMachineScaleSets",
+      "upgradeSettings": {
+        "drainTimeoutInMinutes": null,
+        "maxSurge": null
+      },
+      "vmSize": "Standard_DS2_v2",
+      "vnetSubnetId": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourceGroups/cptrial/providers/Microsoft.Network/virtualNetworks/vnet01/subnets/subnet01",
+      "workloadRuntime": null
+    }
+  ],
+  "apiServerAccessProfile": null,
+  "autoScalerProfile": {
+    "balanceSimilarNodeGroups": "false",
+    "expander": "random",
+    "maxEmptyBulkDelete": "10",
+    "maxGracefulTerminationSec": "600",
+    "maxNodeProvisionTime": "15m",
+    "maxTotalUnreadyPercentage": "45",
+    "newPodScaleUpDelay": "0s",
+    "okTotalUnreadyCount": "3",
+    "scaleDownDelayAfterAdd": "10m",
+    "scaleDownDelayAfterDelete": "10s",
+    "scaleDownDelayAfterFailure": "3m",
+    "scaleDownUnneededTime": "10m",
+    "scaleDownUnreadyTime": "20m",
+    "scaleDownUtilizationThreshold": "0.5",
+    "scanInterval": "10s",
+    "skipNodesWithLocalStorage": "false",
+    "skipNodesWithSystemPods": "true"
+  },
+  "autoUpgradeProfile": {
+    "nodeOsUpgradeChannel": null,
+    "upgradeChannel": "none"
+  },
+  "azureMonitorProfile": {
+    "metrics": {
+      "enabled": false,
+      "kubeStateMetrics": null
+    }
+  },
+  "azurePortalFqdn": "myakscluster-uh4hbe18.portal.hcp.centralindia.azmk8s.io",
+  "currentKubernetesVersion": "1.27.7",
+  "disableLocalAccounts": false,
+  "diskEncryptionSetId": null,
+  "dnsPrefix": "myakscluster",
+  "enablePodSecurityPolicy": null,
+  "enableRbac": true,
+  "extendedLocation": null,
+  "fqdn": "myakscluster-uh4hbe18.hcp.centralindia.azmk8s.io",
+  "fqdnSubdomain": null,
+  "httpProxyConfig": null,
+  "id": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourcegroups/cptrial/providers/Microsoft.ContainerService/managedClusters/cptrial",
+  "identity": {
+    "delegatedResources": null,
+    "principalId": "2f807c26-5029-4f96-aa22-2464b66de6d4",
+    "tenantId": "097b85e8-2f0c-4726-a9d5-af15f7621ce5",
+    "type": "SystemAssigned",
+    "userAssignedIdentities": null
+  },
+  "identityProfile": {
+    "kubeletidentity": {
+      "clientId": "59b5273f-6de0-4bff-9d9d-3bf44bd124a1",
+      "objectId": "ff0166b4-e6f5-434e-b7db-867214bb8d41",
+      "resourceId": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourcegroups/MC_cptrial_cptrial_centralindia/providers/Microsoft.ManagedIdentity/userAssignedIdentities/cptrial-agentpool"
+    }
+  },
+  "kubernetesVersion": "1.27",
+  "linuxProfile": null,
+  "location": "centralindia",
+  "maxAgentPools": 100,
+  "name": "cptrial",
+  "networkProfile": {
+    "dnsServiceIp": "192.168.1.1",
+    "ipFamilies": [
+      "IPv4"
+    ],
+    "loadBalancerProfile": {
+      "allocatedOutboundPorts": null,
+      "backendPoolType": "nodeIPConfiguration",
+      "effectiveOutboundIPs": [
+        {
+          "id": "/subscriptions/f1aed9cb-fcad-472f-b14a-b1a0223fa5a5/resourceGroups/MC_cptrial_cptrial_centralindia/providers/Microsoft.Network/publicIPAddresses/c86d68c1-bb05-4050-89b9-a84b19c14287",
+          "resourceGroup": "MC_cptrial_cptrial_centralindia"
+        }
+      ],
+      "enableMultipleStandardLoadBalancers": null,
+      "idleTimeoutInMinutes": null,
+      "managedOutboundIPs": {
+        "count": 1,
+        "countIpv6": null
+      },
+      "outboundIPs": null,
+      "outboundIpPrefixes": null
+    },
+    "loadBalancerSku": "standard",
+    "natGatewayProfile": null,
+    "networkDataplane": null,
+    "networkMode": null,
+    "networkPlugin": "kubenet",
+    "networkPluginMode": null,
+    "networkPolicy": null,
+    "outboundType": "loadBalancer",
+    "podCidr": "172.16.0.0/22",
+    "podCidrs": [
+      "172.16.0.0/22"
+    ],
+    "serviceCidr": "192.168.0.0/16",
+    "serviceCidrs": [
+      "192.168.0.0/16"
+    ]
+  },
+  "nodeResourceGroup": "MC_cptrial_cptrial_centralindia",
+  "oidcIssuerProfile": {
+    "enabled": false,
+    "issuerUrl": null
+  },
+  "podIdentityProfile": null,
+  "powerState": {
+    "code": "Running"
+  },
+  "privateFqdn": null,
+  "privateLinkResources": null,
+  "provisioningState": "Creating",
+  "publicNetworkAccess": null,
+  "resourceGroup": "cptrial",
+  "resourceUid": "65afab5db7816b0001d0e633",
+  "securityProfile": {
+    "azureKeyVaultKms": null,
+    "defender": null,
+    "imageCleaner": {
+      "enabled": false,
+      "intervalHours": 48
+    },
+    "workloadIdentity": null
+  },
+  "serviceMeshProfile": null,
+  "servicePrincipalProfile": {
+    "clientId": "msi"
+  },
+  "sku": {
+    "name": "Base",
+    "tier": "Free"
+  },
+  "storageProfile": {
+    "blobCsiDriver": null,
+    "diskCsiDriver": {
+      "enabled": true
+    },
+    "fileCsiDriver": {
+      "enabled": true
+    },
+    "snapshotController": {
+      "enabled": true
+    }
+  },
+  "supportPlan": "KubernetesOfficial",
+  "systemData": null,
+  "type": "Microsoft.ContainerService/ManagedClusters",
+  "upgradeSettings": null,
+  "windowsProfile": null,
+  "workloadAutoScalerProfile": {
+    "keda": null,
+    "verticalPodAutoscaler": null
+  }
+}
+203.189.252.74 - - [23/Jan/2024 12:05:31] "POST /json_create_aks HTTP/1.1" 500 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 2882, in json_create_aks
+    os.remove(file_name)
+FileNotFoundError: [Errno 2] No such file or directory: 'terraform-cockpit-team.tfvars'
+45.115.105.117 - - [23/Jan/2024 12:05:47] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831da084f0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:05:52] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+203.189.252.74 - - [23/Jan/2024 12:06:07] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:06:08] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 12:06:34] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831d9ab670>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:06:39] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 12:08:38] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:08:38] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 12:08:51] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:08:51] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+45.115.105.117 - - [23/Jan/2024 12:08:52] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:08:54] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f83200a9940>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:08:57] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+203.189.252.74 - - [23/Jan/2024 12:09:03] "OPTIONS /json_delete_aks HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:09:05] "POST /json_delete_aks HTTP/1.1" 500 -
+user name is: cockpit-team
+Configuration: 
+rg_name = "akss"
+region = "EAST US"
+availability_zones = "1"
+aks_name = "akss"
+aks_version = "1.27"
+node_count = "1"
+Uploading tf file to gitlab
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'terraform-cockpit-team.tfvars', 'file_path': 'azure/template/terraform-cockpit-team.tfvars', 'size': 117, 'encoding': 'base64', 'content_sha256': '93b21db5c7b45bd1a3bda7ab736d7f6b3516f90bb817bd80dad61fe6a6ac951c', 'ref': 'featurebrach1', 'blob_id': '8db7f6e316e5ac88203f72609d7609abf5b4405c', 'commit_id': '9a6b9b77574aa82c94fff87b64006ae9ba09f13b', 'last_commit_id': '0092b063f1f7d330071094b6c8f0a1f610946351', 'execute_filemode': False, 'content': 'CnJnX25hbWUgPSAiYWtzcyIKcmVnaW9uID0gIkVBU1QgVVMiCmF2YWlsYWJpbGl0eV96b25lcyA9ICIxIgpha3NfbmFtZSA9ICJha3NzIgpha3NfdmVyc2lvbiA9ICIxLjI3Igpub2RlX2NvdW50ID0gIjEi'}
+Tf File uploaded successfully
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831e4fd070>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error: (mysql.connector.errors.OperationalError) MySQL Connection not available
+[SQL: SELECT aks_cluster.aks_name AS aks_cluster_aks_name 
+FROM aks_cluster 
+WHERE aks_cluster.username = %(username_1)s]
+[parameters: [{}]]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+user name is: cockpit-team
+Configuration: 
+rg_name = "cptrial"
+region = "EAST US"
+availability_zones = "1"
+aks_name = "cptrial"
+aks_version = "1.27"
+node_count = "1"
+Uploading tf file to gitlab
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'terraform-cockpit-team.tfvars', 'file_path': 'azure/template/terraform-cockpit-team.tfvars', 'size': 117, 'encoding': 'base64', 'content_sha256': '93b21db5c7b45bd1a3bda7ab736d7f6b3516f90bb817bd80dad61fe6a6ac951c', 'ref': 'featurebrach1', 'blob_id': '8db7f6e316e5ac88203f72609d7609abf5b4405c', 'commit_id': '4dd153eb9dc80fb66f93b3828a668bf0362a1397', 'last_commit_id': '0092b063f1f7d330071094b6c8f0a1f610946351', 'execute_filemode': False, 'content': 'CnJnX25hbWUgPSAiYWtzcyIKcmVnaW9uID0gIkVBU1QgVVMiCmF2YWlsYWJpbGl0eV96b25lcyA9ICIxIgpha3NfbmFtZSA9ICJha3NzIgpha3NfdmVyc2lvbiA9ICIxLjI3Igpub2RlX2NvdW50ID0gIjEi'}
+Tf File uploaded successfully
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831dc04ca0>: Failed to establish a new connection: [Errno -2] Name or service not known
+user name is: cockpit-team
+Configuration: 
+rg_name = "cptrial"
+region = "EAST US"
+availability_zones = "1"
+aks_name = "cptrial"
+aks_version = "1.27"
+node_count = "1"
+Uploading tf file to gitlab
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'terraform-cockpit-team.tfvars', 'file_path': 'azure/template/terraform-cockpit-team.tfvars', 'size': 123, 'encoding': 'base64', 'content_sha256': '5062dfe114b24f6dc7dc0edd4e885a0258b8c5be1cd1e3411000b51a89557282', 'ref': 'featurebrach1', 'blob_id': '192594e51f1e7a9ec659191090847439fd794717', 'commit_id': '5aca8122401a5abd315c8cf96e1e91e710a42392', 'last_commit_id': '5aca8122401a5abd315c8cf96e1e91e710a42392', 'execute_filemode': False, 'content': 'CnJnX25hbWUgPSAiY3B0cmlhbCIKcmVnaW9uID0gIkVBU1QgVVMiCmF2YWlsYWJpbGl0eV96b25lcyA9ICIxIgpha3NfbmFtZSA9ICJjcHRyaWFsIgpha3NfdmVyc2lvbiA9ICIxLjI3Igpub2RlX2NvdW50ID0gIjEi'}
+Tf File uploaded successfully
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831dc044f0>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831d9f39a0>: Failed to establish a new connection: [Errno -2] Name or service not known
+{'created_at': '2024-01-23 13:08:30', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5987295629', 'job_link': '/logs-azure?job-id=5987295629'}
+{'created_at': '2024-01-23 13:35:30', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5987464548', 'job_link': '/logs-azure?job-id=5987464548'}
+{'created_at': '2024-01-23 13:37:15', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5987476273', 'job_link': '/logs-azure?job-id=5987476273'}
+{'created_at': '2024-01-23 14:15:04', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5987744153', 'job_link': '/logs-azure?job-id=5987744153'}
+{'created_at': '2024-01-23 15:09:50', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988246493', 'job_link': '/logs-azure?job-id=5988246493'}
+{'created_at': '2024-01-23 15:17:58', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988330785', 'job_link': '/logs-azure?job-id=5988330785'}
+{'created_at': '2024-01-23 15:12:55', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988277302', 'job_link': '/logs-azure?job-id=5988277302'}
+{'created_at': '2024-01-23 15:25:42', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988410822', 'job_link': '/logs-azure?job-id=5988410822'}
+{'created_at': '2024-01-23 15:30:35', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988464945', 'job_link': '/logs-azure?job-id=5988464945'}
+{'created_at': '2024-01-23 15:31:05', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988471118', 'job_link': '/logs-azure?job-id=5988471118'}
+{'created_at': '2024-01-23 15:38:41', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988564535', 'job_link': '/logs-azure?job-id=5988564535'}
+{'created_at': '2024-01-23 15:48:01', 'created_by': 'cockpit-team', 'aks_status': 'failed', 'job_name': 'azure_infrastructure', 'job_id': '5988654086', 'job_link': '/logs-azure?job-id=5988654086'}
+{'created_at': '2024-01-23 16:21:21', 'created_by': 'cockpit-team', 'aks_status': 'success', 'job_name': 'azure_infrastructure', 'job_id': '5988987090', 'job_link': '/logs-azure?job-id=5988987090'}
+{'created_at': '2024-01-23 17:33:28', 'created_by': 'cockpit-team', 'aks_status': 'running', 'job_name': 'azure_infrastructure', 'job_id': '5989629463', 'job_link': '/logs-azure?job-id=5989629463'}
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831da084f0>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831d9ab670>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f83200a9940>: Failed to establish a new connection: [Errno -2] Name or service not known
+Configuration:  
+    aks_name = "cptrial"
+    resource_group = "cptrial"
+    
+Uploading tf file to GitLab
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 58, 'encoding': 'base64', 'content_sha256': '7e77ace65dd73584b197982de7e80c22deb3d91036a61f814f05a5294c32d2ea', 'ref': 'featurebrach1', 'blob_id': '27ef154f116b433c95796f9fb1ff9cede40c2c63', 'commit_id': 'a280f6f8ad699913d2162d4f64af4bb76434b586', 'last_commit_id': '9a6b9b77574aa82c94fff87b64006ae9ba09f13b', 'execute_filemode': False, 'content': 'IAogICAgYWtzX25hbWUgPSAiYXlzdWgiCiAgICByZXNvdXJjZV9ncm91cCA9ICJheXVzaCIKICAgIA=='}
+Tf File uploaded successfully
+Configuration:  
+    aks_name = "cptrial"
+    resource_group = "cptrial"
+    
+Uploading tf file to GitLab
+Configuration:  
+    aks_name = "cptrial"
+    resource_group = "cptrial"
+    
+Uploading tf file to GitLab
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 2096, in json_delete_aks
+    with open(file_name, 'r') as file:
+FileNotFoundError: [Errno 2] No such file or directory: './user_name.json'
+203.189.252.74 - - [23/Jan/2024 12:09:07] "POST /json_delete_aks HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 2096, in json_delete_aks
+    with open(file_name, 'r') as file:
+FileNotFoundError: [Errno 2] No such file or directory: './user_name.json'
+203.189.252.74 - - [23/Jan/2024 12:09:07] "POST /json_delete_aks HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/exceptions.py", line 336, in wrapped_f
+    return f(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/v4/objects/files.py", line 195, in update
+    result = self.gitlab.http_put(path, post_data=data, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/client.py", line 1055, in http_put
+    result = self.http_request(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/client.py", line 794, in http_request
+    raise gitlab.exceptions.GitlabHttpError(
+gitlab.exceptions.GitlabHttpError: 400: 9:reference update: reference does not point to expected object.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 2092, in json_delete_aks
+    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+  File "/home/cockpit/ui/SignUp-mysql/upload_tf_file.py", line 38, in upload_file_to_gitlab
+    raise e
+  File "/home/cockpit/ui/SignUp-mysql/upload_tf_file.py", line 34, in upload_file_to_gitlab
+    existing_file.save(branch=branch_name, commit_message=f"Update var.tf")
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/v4/objects/files.py", line 73, in save
+    super().save(**kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/mixins.py", line 514, in save
+    server_data = self.manager.update(obj_id, updated_data, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/gitlab/exceptions.py", line 338, in wrapped_f
+    raise error(e.error_message, e.response_code, e.response_body) from e
+gitlab.exceptions.GitlabUpdateError: 400: 9:reference update: reference does not point to expected object.
+203.189.252.74 - - [23/Jan/2024 12:09:39] "OPTIONS /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:09:39] "POST /JsonLogin HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 12:09:42] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:09:42] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:09:48] "OPTIONS /json_delete_aks HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 12:10:53] "POST /json_delete_aks HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:11:04] "OPTIONS /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:11:04] "POST /JsonLogin HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:11:08] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:11:09] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:11:34] "OPTIONS /json-my-cluster-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:11:34] "POST /json-my-cluster-details-azure HTTP/1.1" 200 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+45.115.105.117 - - [23/Jan/2024 12:11:56] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c811ac0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:12:01] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+45.115.105.117 - - [23/Jan/2024 12:12:56] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c802a60>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:13:01] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+203.189.252.74 - - [23/Jan/2024 12:15:36] "OPTIONS /json-show-details-aws HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:15:41] "POST /json-show-details-aws HTTP/1.1" 500 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 882, in json_show_details_aws
+    secret_access_key = secret_client.get_secret("secret-Access-key").value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c911d00>: Failed to establish a new connection: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 894, in json_show_details_aws
+    except ResourceNotFoundError:
+NameError: name 'ResourceNotFoundError' is not defined
+203.189.252.74 - - [23/Jan/2024 12:15:49] "OPTIONS /json-show-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:15:50] "POST /json-show-details-azure HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:15:55] "OPTIONS /json-show-details-gcp HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:16:00] "POST /json-show-details-gcp HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1011, in json_show_details_gcp
+    secret = secret_client.get_secret(secret_name)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c95f2b0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:16:09] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c79e1f0>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:16:14] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+203.189.252.74 - - [23/Jan/2024 12:16:21] "OPTIONS /json-show-details-aws HTTP/1.1" 200 -
+203.189.252.74 - - [23/Jan/2024 12:16:26] "POST /json-show-details-aws HTTP/1.1" 500 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 882, in json_show_details_aws
+    secret_access_key = secret_client.get_secret("secret-Access-key").value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c7610a0>: Failed to establish a new connection: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/cockpit/.local/lib/python3.8/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 894, in json_show_details_aws
+    except ResourceNotFoundError:
+NameError: name 'ResourceNotFoundError' is not defined
+45.115.105.117 - - [23/Jan/2024 12:17:52] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c75e070>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:17:57] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+45.115.105.117 - - [23/Jan/2024 12:18:13] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c793e80>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:18:17] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+45.115.105.117 - - [23/Jan/2024 12:18:28] "OPTIONS /json-my-cluster-details-aws HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/home/cockpit/ui/SignUp-mysql/app.py", line 1117, in json_my_cluster_details_aws
+    aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_client.py", line 72, in get_secret
+    bundle = self._client.get_secret(
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/_operations_mixin.py", line 1640, in get_secret
+    return mixin_instance.get_secret(vault_base_url, secret_name, secret_version, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/tracing/decorator.py", line 78, in wrapper_use_tracer
+    return func(*args, **kwargs)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/keyvault/secrets/_generated/v7_4/operations/_key_vault_client_operations.py", line 760, in get_secret
+    pipeline_response: PipelineResponse = self._client._pipeline.run(  # pylint: disable=protected-access
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 230, in run
+    return first_node.send(pipeline_request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_redirect.py", line 197, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 553, in send
+    raise err
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_retry.py", line 531, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/policies/_authentication.py", line 126, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 86, in send
+    response = self.next.send(request)
+  [Previous line repeated 2 more times]
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/_base.py", line 119, in send
+    self._sender.send(request.http_request, **request.context.options),
+  File "/home/cockpit/.local/lib/python3.8/site-packages/azure/core/pipeline/transport/_requests_basic.py", line 386, in send
+    raise error
+azure.core.exceptions.ServiceRequestError: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c749d60>: Failed to establish a new connection: [Errno -2] Name or service not known
+45.115.105.117 - - [23/Jan/2024 12:18:32] "POST /json-my-cluster-details-aws HTTP/1.1" 404 -
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ERROR: (ResourceGroupNotFound) Resource group 'akss' could not be found.
+Code: ResourceGroupNotFound
+Message: Resource group 'akss' could not be found.
+ * Detected change in '/home/cockpit/ui/SignUp-mysql/app.py', reloading
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 62, 'encoding': 'base64', 'content_sha256': 'f2095cc85ce81400f1700fdd0bae32097d3ddf2b1630cce02928fc34bd1ce525', 'ref': 'featurebrach1', 'blob_id': 'e3a520baaca540f30b676d208df50e6ce686902a', 'commit_id': 'dcb2283ffaecb2153ad920a483d1e27888aa3bb5', 'last_commit_id': 'dcb2283ffaecb2153ad920a483d1e27888aa3bb5', 'execute_filemode': False, 'content': 'IAogICAgYWtzX25hbWUgPSAiY3B0cmlhbCIKICAgIHJlc291cmNlX2dyb3VwID0gImNwdHJpYWwiCiAgICA='}
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 62, 'encoding': 'base64', 'content_sha256': 'f2095cc85ce81400f1700fdd0bae32097d3ddf2b1630cce02928fc34bd1ce525', 'ref': 'featurebrach1', 'blob_id': 'e3a520baaca540f30b676d208df50e6ce686902a', 'commit_id': 'dcb2283ffaecb2153ad920a483d1e27888aa3bb5', 'last_commit_id': 'dcb2283ffaecb2153ad920a483d1e27888aa3bb5', 'execute_filemode': False, 'content': 'IAogICAgYWtzX25hbWUgPSAiY3B0cmlhbCIKICAgIHJlc291cmNlX2dyb3VwID0gImNwdHJpYWwiCiAgICA='}
+Tf File uploaded successfully
+Configuration:  
+    aks_name = "cptrial"
+    resource_group = "cptrial"
+    
+Uploading tf file to GitLab
+Existing file: <class 'gitlab.v4.objects.files.ProjectFile'> => {'file_name': 'file.txt', 'file_path': 'azure-delete/file.txt', 'size': 62, 'encoding': 'base64', 'content_sha256': 'f2095cc85ce81400f1700fdd0bae32097d3ddf2b1630cce02928fc34bd1ce525', 'ref': 'featurebrach1', 'blob_id': 'e3a520baaca540f30b676d208df50e6ce686902a', 'commit_id': '06af8d9acebcefc5ddfb5d441a665960bd19a784', 'last_commit_id': 'dcb2283ffaecb2153ad920a483d1e27888aa3bb5', 'execute_filemode': False, 'content': 'IAogICAgYWtzX25hbWUgPSAiY3B0cmlhbCIKICAgIHJlc291cmNlX2dyb3VwID0gImNwdHJpYWwiCiAgICA='}
+Tf File uploaded successfully
+not delete
+----------
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c811ac0>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c802a60>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c79e1f0>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c75e070>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c793e80>: Failed to establish a new connection: [Errno -2] Name or service not known
+Error in my_cluster_details_aws: <urllib3.connection.VerifiedHTTPSConnection object at 0x7f831c749d60>: Failed to establish a new connection: [Errno -2] Name or service not known
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 313-028-363
