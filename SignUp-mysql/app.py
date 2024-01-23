@@ -1203,27 +1203,28 @@ def my_cluster_details_azure():
 def json_my_cluster_details_azure():
         form = request.get_json()
         username = form['username']
-        name = username + "azure"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-        secrets = ["client-id", "client-secret", "subscription-id", "tenant-id"]
+        #name = username + "azure"
+        #key_vault_url = f"https://{name}.vault.azure.net/"
+        #secrets = ["client-id", "client-secret", "subscription-id", "tenant-id"]
 
         try:
             # Retrieve credentials from Azure Key Vault
-            credential = DefaultAzureCredential()
+         #   credential = DefaultAzureCredential()
             # Create a SecretClient using the Key Vault URL
-            secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+          #  secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
             # Retrieve the secrets from Key Vault
-            secrets_values = {secret: secret_client.get_secret(secret).value for secret in secrets}
+           # secrets_values = {secret: secret_client.get_secret(secret).value for secret in secrets}
 
             # Set up the ContainerServiceClient with retrieved credentials
-            aks_client = ContainerServiceClient(credential, secrets_values["subscription-id"])
-
+ #           aks_client = ContainerServiceClient(credential, secrets_values["subscription-id"])
+#
             # Your logic to list Azure Kubernetes Service Clusters here
-            aks_clusters = [cluster.name for cluster in aks_client.managed_clusters.list()]
-
+  #          aks_clusters = [cluster.name for cluster in aks_client.managed_clusters.list()]
+            aks_names = aks_cluster.query.filter_by(username=username).with_entities(aks_cluster.aks_name).all()
+            aks_names = [result[0] for result in aks_names]
             # Handle the exception appropriately, e.g., return an error page
-            return jsonify({"username":username, "aks_cluster": aks_clusters}), 200
+            return jsonify({"username":username, "aks_cluster": aks_names}), 200
         except Exception as e:
             print(f"Error: {str(e)}")
 
@@ -3296,6 +3297,13 @@ def register():
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        user_detail = {
+             "user": user,
+        
+        }
+        file_name = "user_name.json"
+        with open(file_name, 'w') as file:
+           json.dump(user_detail, file)
         db.session.add(user)
         db.session.commit()
 
@@ -3384,6 +3392,13 @@ def JsonLogin():
             # Access the username from the user object and use it as needed
             username = user.username
             new_username_record = UsernameTable(username=username)
+            user_detail = {
+             "user": username,
+        
+            }
+            file_name = "user_name.json"
+            with open(file_name, 'w') as file:
+               json.dump(user_detail, file)
             db.session.add(new_username_record)
             db.session.commit()
 
