@@ -18,7 +18,10 @@ from googleapiclient import discovery
 from google.oauth2 import service_account
 import mysql.connector
 import pytz
-
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.keyvault import KeyVaultManagementClient
+from azure.mgmt.resource import ResourceManagementClient
+from azure.core.exceptions import HttpResponseError
 import time
 import os
 import subprocess
@@ -864,18 +867,40 @@ def export_azure_credentials():
     os.environ["AZURE_SUBSCRIPTION_ID"] = "f1aed9cb-fcad-472f-b14a-b1a0223fa5a5"
 export_azure_credentials()
 
+def check_key_vault_existence(subscription_id, resource_group_name, key_vault_name):
+    # Authenticate using DefaultAzureCredential
+    credential = DefaultAzureCredential()
+
+    # Create Key Vault Management Client
+    keyvault_management_client = KeyVaultManagementClient(credential, subscription_id)
+
+    # Check if Key Vault exists
+    try:
+        keyvault_management_client.vaults.get(resource_group_name, key_vault_name)
+        return True  # Key Vault exists
+    except HttpResponseError as ex:
+        if ex.status_code == 404:
+            return False  # Key Vault does not exist
+        else:
+            # Handle other HTTP response errors if needed
+            raise
+
 @app.route('/json-show-details-aws', methods=['POST'])
 def json_show_details_aws():
     try:
-        form = request.get_json()
-        username = form['username']
-        name = username + "aws"
-        key_vault_url = f"https://{name}.vault.azure.net/"
+        form_data = request.get_json()
+        username = form_data['username']
+        key_vault_name = username + "aws"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
 
-        # Use DefaultAzureCredential to automatically authenticate
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Credential not found."}
+            return jsonify(error_msg), 200
+
+        # Key Vault exists, proceed with retrieving secrets
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
         credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
-
-        # Create a SecretClient using the Key Vault URL
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
         # Retrieve the secrets
@@ -892,8 +917,8 @@ def json_show_details_aws():
         return jsonify(response_data), 200
 
     except ResourceNotFoundError:
-        # Handle the case when the Key Vault doesn't exist
-        error_msg = {"error_message": "Credentials not found."}
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "Credentials not found."}
         return jsonify(error_msg), 200
 
     except HttpResponseError as e:
@@ -905,7 +930,6 @@ def json_show_details_aws():
         # Handle other exceptions
         error_msg = {"error_message": f"An error occurred: {str(e)}"}
         return jsonify(error_msg), 500
-
 @app.route('/show-details-azure', methods=['GET', 'POST'])
 def show_details_azure():
     if current_user.is_authenticated:
@@ -937,18 +961,23 @@ def show_details_azure():
 
 @app.route('/json-show-details-azure', methods=['POST'])
 def json_show_details_azure():
-        form = request.get_json()
-        username =form['username']
-        name = username+"azure"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-    
-        # Use DefaultAzureCredential to automatically authenticate
-        #credential = DefaultAzureCredential()
+    try:
+        form_data = request.get_json()
+        username = form_data['username']
+        key_vault_name = username + "azure"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Credential not found."}
+            return jsonify(error_msg), 200
+
+        # Key Vault exists, proceed with retrieving secrets
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
         credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
-        # Create a SecretClient using the Key Vault URL
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
-        # Retrieve the secret containing your Azure credentials
+        # Retrieve the secrets
         secret_id = "client-id"
         secret_secret = "client-secret"
         secret_subscription = "subscription-id"
@@ -970,6 +999,20 @@ def json_show_details_azure():
 
         return jsonify(response_data), 200
 
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "Credentials not found."}
+        return jsonify(error_msg), 200
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
 @app.route('/show-details-gcp', methods=['GET', 'POST'])
 def show_details_gcp():
     if current_user.is_authenticated:
@@ -992,18 +1035,22 @@ def show_details_gcp():
         
     else:
         return redirect(url_for('login'))
-        
 @app.route('/json-show-details-gcp', methods=['POST'])
 def json_show_details_gcp():
-        form = request.get_json()
-        username =form['username']
-        name = username+"gcp"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-    
-        # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
-        
-        # Create a SecretClient using the Key Vault URL
+    try:
+        form_data = request.get_json()
+        username = form_data['username']
+        key_vault_name = username + "gcp"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Credential not found."}
+            return jsonify(error_msg), 200
+
+        # Key Vault exists, proceed with retrieving secrets
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
         # Retrieve the secrets
@@ -1018,6 +1065,20 @@ def json_show_details_gcp():
         }
 
         return jsonify(response_data), 200
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "Credentials not found."}
+        return jsonify(error_msg), 200
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500        
         
 
 @app.route('/create-cluster', methods=['GET', 'POST'])
