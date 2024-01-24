@@ -2185,30 +2185,35 @@ def get_aks_cluster_status(aks_name, resource_group):
 
 @app.route('/json_delete_aks', methods=['POST'])
 def json_delete_aks():
-    form = request.get_json()
-    aks_name = form['aks_name']
-    resource_group = form['resource_group']
-
-    file_path = 'azure-delete/file.txt'
-    tf_config = f''' 
-    aks_name = "{aks_name}"
-    resource_group = "{resource_group}"
-    '''
-
-    print("Configuration:", tf_config)
-    print("Uploading tf file to GitLab")
-    
-
-    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    print("Tf File uploaded successfully")
-    file_name = "./user_name.json"
+    try:
+        form = request.get_json()
+        aks_name = form['aks_name']
+        resource_group = form['resource_group']
  
-    with open(file_name, 'r') as file:
+        file_path = 'azure-delete/file.txt'
+        tf_config = f''' 
+        aks_name = "{aks_name}"
+        resource_group = "{resource_group}"
+        '''
+ 
+        print("Configuration:", tf_config)
+        print("Uploading tf file to GitLab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+        file_name = "./user_name.json"
+        with open(file_name, 'r') as file:
             user_data = json.load(file)
-    check_and_delete_aks(username=user_data["user"],resource_group=resource_group,aks_name=aks_name)
-    response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline, please wait some time...'}
-    return jsonify(response_data), 200
-    
+        check_and_delete_aks(username=user_data["user"], resource_group=resource_group, aks_name=aks_name)
+        response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline, please wait some time...'}
+        return jsonify(response_data), 200
+ 
+    except Exception as e:
+        # For other exceptions, you might want to log the full exception details
+        response_data = {'status': 'error', 'message': str(e)}
+        return jsonify(response_data), 404
+
+
+
 @app.route('/delete_gke', methods=['POST'])
 def delete_gke():
     gke_name = request.form.get('gke_name')
