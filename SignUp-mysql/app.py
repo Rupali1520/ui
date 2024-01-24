@@ -1,5 +1,7 @@
 from flask import Flask, session
 import boto3
+from azure.core.exceptions import ResourceNotFoundError
+
 import traceback
 from packaging import version
 from flask import Flask, render_template, url_for, flash, redirect, request
@@ -1018,8 +1020,14 @@ def show_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
         name = username+"gcp"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-    
+        key_vault_name = f"https://{name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            return render_template('show-details-gcp.html', secret_value="credential not found", username=username)
+            # Handle the case when the Key Vault doesn't exist
+            # error_msg = {"message": "Credential not found."}
+            # return jsonify(error_msg), 200
     # Use DefaultAzureCredential to automatically authenticate
         credential = DefaultAzureCredential()
         
@@ -1790,7 +1798,54 @@ def gcp_del():
 @app.route('/aws')
 def aws():
     return render_template('aws.html')
+@app.route('/aws1')
+def aws1():
+    return render_template('aws1.html')
+@app.route('/json_update_aws_credential', methods=['POST'])
+def json_update_aws_credential():
+    try:
+        form = request.get_json()
+        Access_key = form['access_key']
+        secret_Access_key = form['secret_access_key']
+        User_name = form['user_name']
+        key_vault_name = User_name+"aws"
+        vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        if not key_vault_exists:
+                # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "First Add Credential."}
+            return jsonify(error_msg), 404
+        update_keyvault_secret(vault_url, "Access-key", Access_key)
+        update_keyvault_secret(vault_url, "secret-Access-key", secret_Access_key)
+        return json.dumps( {
+                "message": 'Credential Update successfully',
+                "statusCode": 200
+        })
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "First add Credential"}
+        return jsonify(error_msg), 404
 
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+@app.route('/update_aws_credential', methods=['POST'])
+def update_aws_credential():
+    Access_key = request.form.get('Access_key')
+    secret_Access_key = request.form.get('secret_Access_key')
+    User_name = request.form.get('User_name')
+    key_vault_name = User_name+"aws"
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    update_keyvault_secret(vault_url, "Access-key", Access_key)
+    update_keyvault_secret(vault_url, "secret-Access-key", secret_Access_key)
+ 
+    return render_template('final-dashboard.html')
 
 @app.route('/json_submit_form_aws', methods=['POST'])
 def json_submit_form_aws():
@@ -2420,6 +2475,41 @@ cluster_type = "{cluster_type}"
 def azure():
     return render_template('azure.html')
 
+@app.route('/azure1')
+def azure1():
+    return render_template('azure1.html')
+
+
+@app.route('/update_azure_credential', methods=['POST'])
+def update_azure_credential():
+    subscription_id = request.form.get('subscription_id')
+    client_id = request.form.get('client_id')
+    client_secret = request.form.get('client_secret')
+    tenant_id = request.form.get('tenant_id')
+    User_name = request.form.get('User_name')
+    key_vault_name = User_name+"azure"
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    update_keyvault_secret(vault_url, "client-id", client_id)
+    update_keyvault_secret(vault_url, "client-secret", client_secret)
+    update_keyvault_secret(vault_url, "tenant-id", tenant_id)
+    update_keyvault_secret(vault_url, "subscription-id", subscription_id)
+    return render_template('final-dashboard.html')
+def update_keyvault_secret(vault_url, secret_name, new_secret_value):
+    # Authenticate using DefaultAzureCredential
+    credential = DefaultAzureCredential()
+
+    # Create a SecretClient using the Key Vault URL
+    secret_client = SecretClient(vault_url=vault_url, credential=credential)
+
+    # Get the existing secret to obtain its metadata
+    existing_secret = secret_client.get_secret(secret_name)
+
+    # Update the secret with the new value
+    updated_secret = secret_client.set_secret(secret_name, new_secret_value)
+
+    print(f"Secret '{secret_name}' updated successfully.")
+    print(f"Old Secret Value: {existing_secret.value}")
+    print(f"New Secret Value: {updated_secret.value}")
 @app.route('/submit_form_azure', methods=['POST'])
 def submit_form_azure():
     # Get  azure form data
@@ -2429,7 +2519,7 @@ def submit_form_azure():
     tenant_id = request.form.get('tenant_id')
     User_name = request.form.get('User_name')
     User_Id = str(int(random.random()))
- 
+    
     # Write Azure form data to terraform.vars file
     with open('terraform.tfvars', 'w') as f:
         f.write(f'username = "{User_name}"\n')
@@ -2549,6 +2639,48 @@ def submit_form_azure():
     return render_template('create_aks.html')
 
 
+@app.route('/json_update_azure_credential', methods=['POST'])
+def json_update_azure_credential():
+    try:
+        form = request.get_json()
+        subscription_id = form['subscription_id']
+        client_id = form['client_id']
+        client_secret = form['client_secret']
+        tenant_id = form['tenant_id']
+        User_name = form['User_name']
+        key_vault_name = User_name + "azure"
+        vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "First Add Credential."}
+            return jsonify(error_msg), 404
+        
+        update_keyvault_secret(vault_url, "client-id", client_id)
+        update_keyvault_secret(vault_url, "client-secret", client_secret)
+        update_keyvault_secret(vault_url, "tenant-id", tenant_id)
+        update_keyvault_secret(vault_url, "subscription-id", subscription_id)
+        
+        return json.dumps({
+            "message": 'Credential Update successfully',
+            "statusCode": 200
+        })
+
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "First add Credential"}
+        return jsonify(error_msg), 404
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
 
 @app.route('/json_submit_form_azure', methods=['POST'])
 def json_submit_form_azure():
@@ -2944,6 +3076,84 @@ node_count = "{node_count}"'''
 @app.route('/gcp')
 def gcp():
     return render_template('gcp.html')
+@app.route('/gcp1')
+def gcp1():
+    return render_template('gcp1.html')
+@app.route('/json_update_credential_gcp', methods=['POST'])
+def json_update_credential_gcp():
+    try:
+        if 'jsonFile' not in request.files:
+            return json.dumps( {
+                "message": 'failed to create key-vault'
+            }),409
+        json_file = request.files['jsonFile'] # Check if the file has a filename
+        if json_file.filename == '':
+            return render_template('./file_submit.html') # Check if the file is a JSON file
+        if not json_file.filename.endswith('.json'):
+            return render_template('./submit.html')  
+        file_content = json_file.read()
+        save_directory = './'
+        file_path = os.path.join(save_directory, json_file.filename)
+        json_file.save(file_path)
+        secrets_file_path = file_path
+        
+        with open(secrets_file_path, 'r') as json_file:
+            secrets_content = json_file.read()
+        form = request.get_json()
+        
+        User_name = form['user_name']
+        key_vault_name = User_name+"gcp"
+        vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        if not key_vault_exists:
+                # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "First Add Credential."}
+            return jsonify(error_msg), 404
+        update_keyvault_secret(vault_url, "your-secret-name", secrets_content)
+        return json.dumps( {
+                "message": 'Credential Update successfully',
+                "statusCode": 200
+        })
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "First add Credential"}
+        return jsonify(error_msg), 404
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+@app.route('/update_credential_gcp', methods=['GET'])
+def update_credential_gcp():  
+    if 'jsonFile' not in request.files:
+        return json.dumps( {
+            "message": 'failed to create key-vault'
+        }),409
+    json_file = request.files['jsonFile'] # Check if the file has a filename
+    if json_file.filename == '':
+        return render_template('./file_submit.html') # Check if the file is a JSON file
+    if not json_file.filename.endswith('.json'):
+        return render_template('./submit.html')  
+    file_content = json_file.read()
+    save_directory = './'
+    file_path = os.path.join(save_directory, json_file.filename)
+    json_file.save(file_path)
+    secrets_file_path = file_path
+    
+    with open(secrets_file_path, 'r') as json_file:
+        secrets_content = json_file.read()
+ 
+    User_name = request.form.get('User_name')
+    key_vault_name = User_name+"gcp"
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    update_keyvault_secret(vault_url, "your-secret-name", secrets_content)
+
+    return render_template('final-dashboard.html')
 @app.route('/submit_form_gke', methods=['GET'])
 def create_gcp():
     # Retrieve form data
