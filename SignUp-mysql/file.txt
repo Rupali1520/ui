@@ -1,2 +1,3 @@
-aks_name = "cockpitaks"
-resource_group = "cockpitaks"
+eks-name = "akkks-cluster-aws"
+region = "us-east-1"
+node = "akkks-cluster-aws-eks-nodegroup"

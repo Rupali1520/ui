@@ -1,5 +1,0 @@
-username = "cockpit-team"
-subscription_id = "1ce8bf33-286c-42dd-b193-10c310dd14b7"
-client_id = "4b5bd0f1-f692-47dd-a186-c8bf1925a86b"
-client_secret = "f7a499d8-d253-434d-a4ff-56e0770ea38b"
-tenant_id = "bddba232-ecf3-49b7-a5b2-7cd128fc6135"

@@ -1,6 +1,7 @@
 from flask import Flask, session
 import boto3
 from azure.core.exceptions import ResourceNotFoundError
+from azure.keyvault.secrets import SecretClient
 
 import traceback
 from packaging import version
@@ -167,7 +168,148 @@ def home():
 def get_authenticated_user_id():
     username = session.get('username')
     return username
+
+
+@app.route('/recentjob_azure', methods=['GET'])
+def recentjob_azure():
+    username = current_user.username
+    job_name = 'azure_infrastructure'
  
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+ 
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+ 
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+ 
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+ 
+    project = gl.projects.get(project_id)
+ 
+    # Get the most recent job ID
+    if job_ids:
+        most_recent_job_id = max(job_ids)
+        return redirect(url_for('logs_azure', job_id=most_recent_job_id))
+ 
+    return render_template('jobs_azure.html', outputs=[])
+ 
+ 
+@app.route('/json_recentjob_azure', methods=['POST'])
+def json_recentjob_azure():
+    form = request.get_json()
+    username = form['username']
+    job_name = 'azure_infrastructure'
+ 
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+ 
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+ 
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+ 
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+ 
+    project = gl.projects.get(project_id)
+ 
+    # Get the most recent job ID
+    if job_ids:
+        most_recent_job_id = max(job_ids)
+        response_data = {
+                'username': username,
+                'most_recent_job_id': most_recent_job_id,
+                'message': 'Most recent job ID retrieved successfully'
+            }
+ 
+        return jsonify(response_data)
+ 
+    # return render_template('jobs_azure.html', outputs=[])
+ 
+@app.route('/recentjoblogs-azure', methods=['GET', 'POST'])
+def recentjoblogs_azure():
+    if current_user.is_authenticated:
+        username = current_user.username
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job_id')
+ 
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+ 
+        response = requests.get(job_url, headers=headers)
+ 
+        for job in response.json():
+ 
+            log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+ 
+            log_response = requests.get(log_url, headers=headers)
+ 
+            log_data = log_response.text
+ 
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ 
+ 
+        clean_logs = ansi_escape.sub('', log_data)
+ 
+ 
+        return render_template('logs-azure.html', username=username, logs=clean_logs)
+    else:
+        return redirect(url_for('login'))
+ 
+@app.route('/json-recentjoblogs-azure', methods=['GET', 'POST'])
+def json_recentjoblogs_azure():
+        form = request.get_json()
+        username = form['username']
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job_id')
+ 
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+ 
+        response = requests.get(job_url, headers=headers)
+ 
+        for job in response.json():
+ 
+            log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+ 
+            log_response = requests.get(log_url, headers=headers)
+ 
+            log_data = log_response.text
+ 
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ 
+ 
+        clean_logs = ansi_escape.sub('', log_data)
+        response_data = {
+                'username': username,
+                'logs': clean_logs
+            }
+ 
+        return jsonify(response_data)
 
 @app.route('/jobs_aws', methods=['GET'])
 def jobs_aws():
@@ -1801,6 +1943,49 @@ def aws():
 @app.route('/aws1')
 def aws1():
     return render_template('aws1.html')
+@app.route('/aws2')
+def aws2():
+    return render_template('aws2.html')
+@app.route('/delete_aws_credential', methods=['POST'])
+def delete_aws_credential():
+    User_name = request.form.get('User_name')
+    key_vault_name = User_name+"aws"
+    resource_group = "Cockpit"
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
+ 
+    return render_template('final-dashboard.html')
+@app.route('/json_delete_aws_credential', methods=['POST'])
+def json_delete_aws_credential():
+    try:
+        form = request.get_json()
+        User_name = form['user_name']
+        key_vault_name = User_name+"aws"
+        vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        if not key_vault_exists:
+                # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Invaild username."}
+            return jsonify(error_msg), 404
+        delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', 'Cockpit', key_vault_name)
+        return json.dumps( {
+                "message": 'Credential delete successfully',
+                "statusCode": 200
+        })
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "Invaild username"}
+        return jsonify(error_msg), 404
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
 @app.route('/json_update_aws_credential', methods=['POST'])
 def json_update_aws_credential():
     try:
@@ -2484,6 +2669,70 @@ def azure():
 def azure1():
     return render_template('azure1.html')
 
+@app.route('/azure2')
+def azure2():
+    return render_template('azure2.html')
+@app.route('/delete_azure_credential', methods=['POST'])
+def delete_azure_credential():
+    User_name = request.form.get('User_name')
+    key_vault_name = User_name+"azure"
+    resource_group = "Cockpit"
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
+    return render_template('final-dashboard.html')
+@app.route('/json_delete_azure_credential', methods=['POST'])
+def json_delete_azure_credential():
+    try:
+        form = request.get_json()
+        User_name = form['User_name']
+        key_vault_name = User_name + "azure"
+        vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        resource_group = "Cockpit"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"error message": "Invaild Username."}
+            return jsonify(error_msg), 404
+        
+        delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
+        
+        return json.dumps({
+            "message": 'Credential delete successfully',
+            "statusCode": 200
+        })
+
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"error message": "Invaild Username."}
+        return jsonify(error_msg), 404
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+def delete_keyvault(vault_url, subscription_id, resource_group, keyvault_name):
+    # Initialize the Key Vault client
+    credential = DefaultAzureCredential()
+    secret_client = SecretClient(vault_url=vault_url, credential=credential)
+
+    # # Delete all secrets from the Key Vault
+    # secrets = secret_client.list_properties_of_secrets()
+    # for secret in secrets:
+    #     secret_client.begin_delete_secret(secret.name).wait()
+
+    # # Purge the deleted secrets
+    # deleted_secrets = secret_client.list_deleted_secrets()
+    # for deleted_secret in deleted_secrets:
+    #     secret_client.purge_deleted_secret(deleted_secret.name)
+
+    # Finally, delete the Key Vault itself
+    client = KeyVaultManagementClient(credential, subscription_id)
+    client.vaults.delete(resource_group, keyvault_name)
 
 @app.route('/update_azure_credential', methods=['POST'])
 def update_azure_credential():
@@ -2499,6 +2748,7 @@ def update_azure_credential():
     update_keyvault_secret(vault_url, "tenant-id", tenant_id)
     update_keyvault_secret(vault_url, "subscription-id", subscription_id)
     return render_template('final-dashboard.html')
+
 def update_keyvault_secret(vault_url, secret_name, new_secret_value):
     # Authenticate using DefaultAzureCredential
     credential = DefaultAzureCredential()
@@ -2524,7 +2774,7 @@ def submit_form_azure():
     tenant_id = request.form.get('tenant_id')
     User_name = request.form.get('User_name')
     User_Id = str(int(random.random()))
-    
+   
     # Write Azure form data to terraform.vars file
     with open('terraform.tfvars', 'w') as f:
         f.write(f'username = "{User_name}"\n')
@@ -3084,6 +3334,9 @@ def gcp():
 @app.route('/gcp1')
 def gcp1():
     return render_template('gcp1.html')
+@app.route('/gcp2')
+def gcp2():
+    return render_template('gcp2.html')
 @app.route('/json_update_credential_gcp', methods=['POST'])
 def json_update_credential_gcp():
     try:
@@ -3122,6 +3375,45 @@ def json_update_credential_gcp():
     except ResourceNotFoundError:
         # Handle the case when a specific secret doesn't exist
         error_msg = {"message": "First add Credential"}
+        return jsonify(error_msg), 404
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+@app.route('/delete_credential_gcp', methods=['POST'])
+def delete_credential_gcp():
+    User_name = request.form.get('User_name')
+    key_vault_name = User_name
+    resource_group = "Cockpit"
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
+    return render_template('final-dashboard.html')
+@app.route('/json_delete_credential_gcp', methods=['POST'])
+def json_delete_credential_gcp():
+    try:
+        form = request.get_json()
+        User_name = form['user_name']
+        key_vault_name = User_name+"gcp"
+        vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        if not key_vault_exists:
+                # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Invaild username."}
+            return jsonify(error_msg), 404
+        delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', 'Cockpit', key_vault_name)
+        return json.dumps( {
+                "message": 'Credential delete successfully',
+                "statusCode": 200
+        })
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "Invaild username"}
         return jsonify(error_msg), 404
 
     except HttpResponseError as e:
