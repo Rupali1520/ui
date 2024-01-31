@@ -53,9 +53,7 @@
       </style>
   </head>
   <body>
-      <form action="/" method="post" class="username-form">
-          <label for="username">Hello {{username}}!!</label>
-      </form>
+      
   
       <div class="container">
           <div class="actions">
@@ -75,6 +73,25 @@
             <!-- Button to close the side pane -->
             <button style="position: absolute; top: 80%; right: 10px;" onclick="hideSidePane()">Close</button>
         </div>
+        <div class="details">
+            <h1>Accounts:</h1>
+            <ul>
+                {% for cluster in accounts %}
+                    <li>{{ cluster }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <form id="azureform" action="/get_azure_cluster" method="post" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="account_name">Account name:</label>
+                <input type="text" class="form-control"  name="account_name" required>
+            </div>
+            
+       
+    
+            <button type="submit" class="btn btn-custom-light-blue">Submit</button>
+
+        </form>
           <div class="details">
               <h1>Healthy Azure Kubernetes Service Clusters:</h1>
               <ul>

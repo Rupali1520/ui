@@ -126,7 +126,10 @@ input:checked + .slider:before {
 <div class="container">
     <h2>Create AKS Cluster</h2>
     <form id="aksForm" action="/create_aks" method="post" onsubmit="return checkforvaldation()">
-
+        <div class="form-group">
+            <label for="account_name" style="color: aliceblue;">account_name:</label>
+            <input type="text" class="form-control" id="account_name" name="account_name" required>
+        </div>
         <div class="form-group">
             <label for="resource_group" style="color: aliceblue;">Resource Group Name:</label>
             <input type="text" class="form-control" id="resource_group" name="resource_group" required>

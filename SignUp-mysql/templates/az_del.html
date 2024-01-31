@@ -45,7 +45,10 @@
     <div class="container">
     <h2>Delete AKS Cluster</h2>
     <form id="aksForm" action="/delete_aks" method="post" onsubmit="return checkforvaldation()">
-    
+        <div class="form-group">
+            <label for="account_name" style="color: aliceblue;">account_name:</label>
+            <input type="text" class="form-control" id="account_name" name="account_name" required>
+        </div>
         <div class="form-group">
             <label for="aks_name" style="color: aliceblue;">AKS Name:</label>
             <input type="text" class="form-control" id="aks_name" name="aks_name" required>

@@ -1,8 +1,8 @@
 from flask import Flask, session
+from flask import jsonify
 import boto3
 from azure.core.exceptions import ResourceNotFoundError
 from azure.keyvault.secrets import SecretClient
-
 import traceback
 from packaging import version
 from flask import Flask, render_template, url_for, flash, redirect, request
@@ -38,7 +38,6 @@ from azure.keyvault.secrets import SecretClient
 from azure.mgmt.keyvault import KeyVaultManagementClient
 from flask import Flask, jsonify
 import hcl
-# Your Flask setup code
 import re 
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
@@ -56,13 +55,6 @@ app = Flask(__name__, static_url_path='/static')
 CORS(app) 
 
 app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
-# db_config = {
-#     'host': 'mysql-service',
-#     'user': 'root',
-#     'port': 3306,
-#     'password': 'cockpitpro',
-#     'database': 'jobinfo',
-# }
 
 app.config['WTF_CSRF_ENABLED'] = False
 
@@ -73,8 +65,24 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
  
- 
+class UserAccount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False)
+    account_name = db.Column(db.String(255), nullable=False)
+    cloud_name = db.Column(db.String(255), nullable=False)
 class UsernameTable(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"UsernameTable('{self.username}')"
+class UsernameTableaws(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f"UsernameTable('{self.username}')"
+class UsernameTablegcp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
 
@@ -1074,13 +1082,70 @@ def json_show_details_aws():
         # Handle other exceptions
         error_msg = {"error_message": f"An error occurred: {str(e)}"}
         return jsonify(error_msg), 500
-@app.route('/show-details-azure', methods=['GET', 'POST'])
-def show_details_azure():
+@app.route('/json_get_credential', methods=['GET', 'POST'])
+def json_get_credential():
+    try:
+        form_data = request.get_json()
+        account_name = form_data['account_name']
+       
+        key_vault_name = account_name+"azure"
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Credential not found."}
+            return jsonify(error_msg), 200
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        # Retrieve the secret containing your Azure credentials
+        secret_id = "client-id"
+        secret_secret = "client-secret"
+        secret_subscription = "subscription-id"
+        secret_tenant = "tenant-id"
+
+        client_id = secret_client.get_secret(secret_id).value
+        client_secret = secret_client.get_secret(secret_secret).value
+        subscription_id = secret_client.get_secret(secret_subscription).value
+        tenant_id = secret_client.get_secret(secret_tenant).value
+        response_data = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "subscription_id": subscription_id,
+            "tenant_id": tenant_id
+        }
+        return jsonify(response_data), 200
+
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "accounts are not avilable."}
+        return jsonify(error_msg), 200
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+    
+@app.route('/get_credential', methods=['GET', 'POST'])
+def get_credential():
     if current_user.is_authenticated:
         username = current_user.username
-        name = username+"azure"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-    
+        account_name = request.form.get('account_name')
+        accounts = get_account(username,'azure')
+        key_vault_name = account_name+"azure"
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            return render_template('show-details-azure.html', message="credential not found",username=username,accounts=accounts)
         # Use DefaultAzureCredential to automatically authenticate
         #credential = DefaultAzureCredential()
         credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
@@ -1097,7 +1162,16 @@ def show_details_azure():
         client_secret = secret_client.get_secret(secret_secret).value
         subscription_id = secret_client.get_secret(secret_subscription).value
         tenant_id = secret_client.get_secret(secret_tenant).value
-        return render_template('show-details-azure.html', username=username, client_id=client_id, client_secret=client_secret, subscription_id=subscription_id, tenant_id=tenant_id)
+        return render_template('show-details-azure.html', username=username,accounts=accounts,client_id=client_id, client_secret=client_secret, subscription_id=subscription_id, tenant_id=tenant_id)
+        
+    else:
+        return redirect(url_for('login'))
+@app.route('/show-details-azure', methods=['GET', 'POST'])
+def show_details_azure():
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'azure')
+        return render_template('show-details-azure.html', username=username,accounts=accounts)
         
     else:
         return redirect(url_for('login'))
@@ -1108,44 +1182,12 @@ def json_show_details_azure():
     try:
         form_data = request.get_json()
         username = form_data['username']
-        key_vault_name = username + "azure"
-        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
-
-        if not key_vault_exists:
-            # Handle the case when the Key Vault doesn't exist
-            error_msg = {"message": "Credential not found."}
-            return jsonify(error_msg), 200
-
-        # Key Vault exists, proceed with retrieving secrets
-        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
-        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
-        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
-
-        # Retrieve the secrets
-        secret_id = "client-id"
-        secret_secret = "client-secret"
-        secret_subscription = "subscription-id"
-        secret_tenant = "tenant-id"
-
-        client_id = secret_client.get_secret(secret_id).value
-        client_secret = secret_client.get_secret(secret_secret).value
-        subscription_id = secret_client.get_secret(secret_subscription).value
-        tenant_id = secret_client.get_secret(secret_tenant).value
-
-        # Return JSON response
-        response_data = {
-            "username": username,
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "subscription_id": subscription_id,
-            "tenant_id": tenant_id
-        }
-
-        return jsonify(response_data), 200
+        accounts = get_account(username,'azure')
+        return jsonify(accounts), 200
 
     except ResourceNotFoundError:
         # Handle the case when a specific secret doesn't exist
-        error_msg = {"message": "Credentials not found."}
+        error_msg = {"message": "accounts are not avilable."}
         return jsonify(error_msg), 200
 
     except HttpResponseError as e:
@@ -1377,35 +1419,51 @@ def my_cluster_details():
         # for aks_cluster in aks_clusters:
         #     if aks_cluster.provisioning_state.lower() == "succeeded" and aks_cluster.agent_pool_profiles[0].provisioning_state.lower() == "succeeded":
         #         print(f" - {aks_cluster.name}")
-
-@app.route('/my-cluster-details-azure', methods=['GET', 'POST'])
-def my_cluster_details_azure():
+@app.route('/get_azure_cluster', methods=['GET', 'POST'])
+def get_azure_cluster():
     if current_user.is_authenticated:
         username = current_user.username
-        name = username + "azure"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-        secrets = ["client-id", "client-secret", "subscription-id", "tenant-id"]
+        account = request.form.get('account_name')
+       
 
         try:
             # Retrieve credentials from Azure Key Vault
-            credential = DefaultAzureCredential()
-            # Create a SecretClient using the Key Vault URL
-            secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+            aks_names = get_cluster_azure(account)
 
-            # Retrieve the secrets from Key Vault
-            secrets_values = {secret: secret_client.get_secret(secret).value for secret in secrets}
-
-            # Set up the ContainerServiceClient with retrieved credentials
-            aks_client = ContainerServiceClient(credential, secrets_values["subscription-id"])
-
-            # Your logic to list Azure Kubernetes Service Clusters here
-            aks_clusters = [cluster.name for cluster in aks_client.managed_clusters.list()]
-
-            return render_template('my-cluster-details-azure.html', username=username, aks_clusters=aks_clusters)
+            return render_template('my-cluster-details-azure.html', username=username,aks_clusters=aks_names)
         except Exception as e:
             print(f"Error: {str(e)}")
             # Handle the exception appropriately, e.g., return an error page
             return render_template('error.html', error_message=str(e))
+    else:
+        return redirect(url_for('login'))
+def get_cluster_azure(account_name):
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+    
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = f"SELECT distinct aks_name FROM aks_cluster WHERE username = '{account_name}'"
+        cursor.execute(query)
+        name = [result[0] for result in cursor.fetchall()]
+        cursor.close()
+        connection.close()
+        return name
+@app.route('/my-cluster-details-azure', methods=['GET', 'POST'])
+def my_cluster_details_azure():
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'azure')
+    
+            
+
+        return render_template('my-cluster-details-azure.html', username=username,accounts=accounts)
+
     else:
         return redirect(url_for('login'))
 
@@ -1413,25 +1471,22 @@ def my_cluster_details_azure():
 
    
 
-from flask import jsonify
+
 @app.route('/json-my-cluster-details-azure', methods=['POST'])
 def json_my_cluster_details_azure():
     form = request.get_json()
-    username = form['username']
+    account = form['account_name']
 
     try:
         # Query the database to get AKS cluster names for the given username
-        aks_names = aks_cluster.query.filter_by(username=username).with_entities(aks_cluster.aks_name).all()
-        
-        # Extract AKS names from the query result
-        aks_names = [result[0] for result in aks_names]
+        aks_names = get_cluster_azure(account)
 
         # Check if there are no AKS clusters available
         if not aks_names:
-            return jsonify({"username": username, "message": "No AKS clusters available for the given user."}), 200
+            return jsonify({"message": "No AKS clusters available for the given user."}), 200
 
         # Return JSON response with AKS cluster names
-        return jsonify({"username": username, "aks_cluster": aks_names}), 200
+        return jsonify({"aks_cluster": aks_names}), 200
 
     except Exception as e:
         # Handle other exceptions (e.g., database connection error)
@@ -2296,9 +2351,12 @@ def success_aws():
 
 @app.route('/delete_aks', methods=['POST'])
 def delete_aks():
-    
+    account_name =  request.form.get("account_name")
     aks_name = request.form.get('aks_name')
     resource_group = request.form.get('resource_group')
+    new_username_record = UsernameTable(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
     gl.auth()
     project = gl.projects.get(project_id)
@@ -2333,7 +2391,7 @@ def delete_aks():
  
         with open(file_name, 'r') as file:
             user_data = json.load(file)
-        check_and_delete_aks(username=user_data["user"],resource_group=resource_group,aks_name=aks_name)
+        check_and_delete_aks(username=account_name,resource_group=resource_group,aks_name=aks_name)
         return render_template('success.html')
 def check_and_delete_aks(username, resource_group, aks_name):
     while True:
@@ -2372,9 +2430,12 @@ def get_aks_cluster_status(aks_name, resource_group):
 def json_delete_aks():
     try:
         form = request.get_json()
+        account_name = form['account_name']
         aks_name = form['aks_name']
         resource_group = form['resource_group']
- 
+        new_username_record = UsernameTable(username=account_name)
+        db.session.add(new_username_record)
+        db.session.commit()
         file_path = 'azure-delete/file.txt'
         tf_config = f''' 
         aks_name = "{aks_name}"
@@ -2385,11 +2446,9 @@ def json_delete_aks():
         print("Uploading tf file to GitLab")
         upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
         print("Tf File uploaded successfully")
-        file_name = "./user_name.json"
-        with open(file_name, 'r') as file:
-            user_data = json.load(file)
-        check_and_delete_aks(username=user_data["user"], resource_group=resource_group, aks_name=aks_name)
-        response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline, please wait some time...'}
+        
+        check_and_delete_aks(username=account_name, resource_group=resource_group, aks_name=aks_name)
+        response_data = {'status': 'success', 'message': 'Cluster Deleted'}
         return jsonify(response_data), 200
  
     except Exception as e:
@@ -2475,6 +2534,7 @@ def delete_eks():
     Node = request.form.get('ng_name')
     gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
     gl.auth()
+
     project = gl.projects.get(project_id)
     with open('file.txt', 'w') as f:
         f.write(f'eks-name = "{eks_name}"\n')
@@ -2572,7 +2632,9 @@ def json_create_aws():
 
     file_name = f'terraform-{user_data["user"]}.tfvars'
     file_path = f'aws/templates/{file_name}'
-
+    new_username_record = UsernameTableaws(username={user_data["user"]})
+    db.session.add(new_username_record)
+    db.session.commit()
     tf_config = f'''
 cluster_name = "{eks_name}"
 region = "{Region}"
@@ -2636,7 +2698,9 @@ def create_aws():
     db.session.commit()
     file_name = f'terraform-{user_data["user"]}.tfvars'
     file_path = f'aws/templates/{file_name}'
-
+    new_username_record = UsernameTableaws(username={user_data["user"]})
+    db.session.add(new_username_record)
+    db.session.commit()
     tf_config = f'''
 cluster_name = "{eks_name}"
 region = "{Region}"
@@ -2663,39 +2727,141 @@ cluster_type = "{cluster_type}"
 #azure form
 @app.route('/azure')
 def azure():
-    return render_template('azure.html')
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'azure')
+        return render_template('azure.html', username=username,accounts=accounts)
+        
+    else:
+        return redirect(url_for('login'))
+@app.route('/azure_account')
+def azure_account():
+    return render_template('azure_account.html')
+@app.route('/already', methods=['POST'])
+def already():
+    username = request.form.get('User_name')
+    name = get_account(username,'azure')
+        
+    return render_template('azure.html', name=name)
+@app.route('/azureuser_insert', methods=['POST'])
+def azureuser_insert():
+    try:
+        username = request.form.get('User_name')
+        account_name = request.form.get('account_name')
+        new_user = UserAccount(username=username, account_name=account_name, cloud_name='azure')
+        db.session.add(new_user)
+        db.session.commit()
+        name = get_account(username,'azure')
+        
+        return render_template('azure.html', name=name)
 
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def get_account(username,cloud_name):
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+    
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = f"SELECT distinct account_name FROM user_account WHERE username = '{username}' and cloud_name = '{cloud_name}'"
+        cursor.execute(query)
+        name = [result[0] for result in cursor.fetchall()]
+        cursor.close()
+        connection.close()
+        return name
+def delete_account(account_name):
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = "DELETE FROM user_account WHERE account_name = %s;"
+        
+        # Execute the query with the provided parameter
+        cursor.execute(query, (account_name,))
+
+        # Commit the changes to the database
+        connection.commit()
+        return
+@app.route('/json_get_account', methods=['POST'])
+def json_get_account():
+        form = request.get_json()
+        username = form['User_name']
+        cloud_name = form['cloud_name']
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+    
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = f"SELECT distinct account_name FROM user_account WHERE username = '{username}' and cloud_name = '{cloud_name}'"
+        cursor.execute(query)
+        name = [result[0] for result in cursor.fetchall()]
+        cursor.close()
+        connection.close()
+        if not name:
+            # Handle the case when there are no clusters
+              return jsonify({"username": username,"cloud_name": cloud_name, "account_name": [], "message": "No account name available."}), 200
+
+        return jsonify({"username": username,"cloud_name": cloud_name, "account_name": name}),200
 @app.route('/azure1')
 def azure1():
-    return render_template('azure1.html')
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'azure')
+        return render_template('azure1.html', username=username,accounts=accounts)
+        
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/azure2')
 def azure2():
-    return render_template('azure2.html')
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'azure')
+        return render_template('azure2.html', username=username,accounts=accounts)
+        
+    else:
+        return redirect(url_for('login'))
 @app.route('/delete_azure_credential', methods=['POST'])
 def delete_azure_credential():
-    User_name = request.form.get('User_name')
-    key_vault_name = User_name+"azure"
+    Account_name = request.form.get('account_name')
+    key_vault_name = Account_name+"azure"
     resource_group = "Cockpit"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
     delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
+    delete_account(Account_name)
     return render_template('final-dashboard.html')
 @app.route('/json_delete_azure_credential', methods=['POST'])
 def json_delete_azure_credential():
     try:
         form = request.get_json()
-        User_name = form['User_name']
-        key_vault_name = User_name + "azure"
+        Account_name = form['account_name']
+        key_vault_name = Account_name + "azure"
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         resource_group = "Cockpit"
         key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
         if not key_vault_exists:
-            # Handle the case when the Key Vault doesn't exist
-            error_msg = {"error message": "Invaild Username."}
+            error_msg = {"error message": "Invaild Account name."}
             return jsonify(error_msg), 404
         
         delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
-        
+        delete_account(Account_name)
         return json.dumps({
             "message": 'Credential delete successfully',
             "statusCode": 200
@@ -2703,7 +2869,7 @@ def json_delete_azure_credential():
 
     except ResourceNotFoundError:
         # Handle the case when a specific secret doesn't exist
-        error_msg = {"error message": "Invaild Username."}
+        error_msg = {"error message": "Invaild Account name."}
         return jsonify(error_msg), 404
 
     except HttpResponseError as e:
@@ -2719,18 +2885,6 @@ def delete_keyvault(vault_url, subscription_id, resource_group, keyvault_name):
     # Initialize the Key Vault client
     credential = DefaultAzureCredential()
     secret_client = SecretClient(vault_url=vault_url, credential=credential)
-
-    # # Delete all secrets from the Key Vault
-    # secrets = secret_client.list_properties_of_secrets()
-    # for secret in secrets:
-    #     secret_client.begin_delete_secret(secret.name).wait()
-
-    # # Purge the deleted secrets
-    # deleted_secrets = secret_client.list_deleted_secrets()
-    # for deleted_secret in deleted_secrets:
-    #     secret_client.purge_deleted_secret(deleted_secret.name)
-
-    # Finally, delete the Key Vault itself
     client = KeyVaultManagementClient(credential, subscription_id)
     client.vaults.delete(resource_group, keyvault_name)
 
@@ -2741,7 +2895,8 @@ def update_azure_credential():
     client_secret = request.form.get('client_secret')
     tenant_id = request.form.get('tenant_id')
     User_name = request.form.get('User_name')
-    key_vault_name = User_name+"azure"
+    account_name = request.form.get('account_name')
+    key_vault_name = account_name+"azure"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
     update_keyvault_secret(vault_url, "client-id", client_id)
     update_keyvault_secret(vault_url, "client-secret", client_secret)
@@ -2750,21 +2905,44 @@ def update_azure_credential():
     return render_template('final-dashboard.html')
 
 def update_keyvault_secret(vault_url, secret_name, new_secret_value):
-    # Authenticate using DefaultAzureCredential
     credential = DefaultAzureCredential()
-
-    # Create a SecretClient using the Key Vault URL
     secret_client = SecretClient(vault_url=vault_url, credential=credential)
-
-    # Get the existing secret to obtain its metadata
     existing_secret = secret_client.get_secret(secret_name)
-
-    # Update the secret with the new value
     updated_secret = secret_client.set_secret(secret_name, new_secret_value)
-
     print(f"Secret '{secret_name}' updated successfully.")
     print(f"Old Secret Value: {existing_secret.value}")
     print(f"New Secret Value: {updated_secret.value}")
+def create_key_vault(key_vault_name,location,rg):
+    key_vault_name = key_vault_name
+    key_vault_name = key_vault_name.replace("_", "-")
+    location = location  # Choose a valid Azure location without special characters
+    rg = rg
+    try:
+        # Use Azure CLI to get the access token
+        access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
+    except subprocess.CalledProcessError:
+        print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
+        exit(1)
+
+    try:
+        subprocess.check_call(["az", "keyvault", "create", "--name", key_vault_name, "--resource-group", rg, "--location", location])
+        print(f"Azure Key Vault '{key_vault_name}' created successfully.")
+        return True
+    except subprocess.CalledProcessError:
+        print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation.")
+        return False
+def store_secrets(key_vault_url, secret_name, secret_value):
+    credential = DefaultAzureCredential()
+
+    # Create a SecretClient to interact with the Key Vault
+    secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+    try:
+        # Create or update the secret in the Key Vault
+        secret = secret_client.set_secret(secret_name, secret_value)
+        print(f"Secret '{secret.name}' created or updated successfully.")
+    except Exception as e:
+        print(f"Error: {e}")
 @app.route('/submit_form_azure', methods=['POST'])
 def submit_form_azure():
     # Get  azure form data
@@ -2772,124 +2950,22 @@ def submit_form_azure():
     client_id = request.form.get('client_id')
     client_secret = request.form.get('client_secret')
     tenant_id = request.form.get('tenant_id')
+    account_name = request.form.get('account_name')
     User_name = request.form.get('User_name')
-    User_Id = str(int(random.random()))
-   
-    # Write Azure form data to terraform.vars file
-    with open('terraform.tfvars', 'w') as f:
-        f.write(f'username = "{User_name}"\n')
-        f.write(f'subscription_id = "{subscription_id}"\n')
-        f.write(f'client_id = "{client_id}"\n')
-        f.write(f'client_secret = "{client_secret}"\n')
-        f.write(f'tenant_id = "{tenant_id}"\n')
-   
-    ## starting the script
- 
-    # Azure Resource Group and Key Vault Configuration
     resource_group_name = "Cockpit"  
-    key_vault_name = User_name+"azure"
-    secrets_file_path = "./terraform.tfvars"
-
-
-    user_detail = {
-        "user": User_name
-    }
-
-    print("User name:", User_name)
-
-    file_name = "user_name.json"
-
-    with open(file_name, 'w') as file:
-        json.dump(user_detail, file)
-
- 
-   # Replace underscores with hyphens in the Key Vault and Resource Group names
-    key_vault_name = key_vault_name.replace("_", "-")
-    resource_group_name = resource_group_name.replace("_", "-")    
-    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
-    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
-    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
-    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
-    matching_secret_found = False
-    credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-    keyvault_client = KeyVaultManagementClient(credential, subscription_id)
-    # Read secrets from the file
-    secrets = {}
-    with open(secrets_file_path, "r") as file:
-        for line in file:
-            key, value = line.strip().split(" = ")
-            secrets[key] = value
-    with open("./terraform.tfvars", "r") as file:
-     for line in file:
-        if line.strip().startswith('client_secret'):
-            key, value = line.strip().split(' = ')
-            # print(value)
-            client_secret = value
- 
-    # print (client_secret)
- 
-    keyvaults = keyvault_client.vaults.list()
-    for vault in keyvaults:
-        vault_name = vault.name
-        keyvault_url = f"https://{vault_name}.vault.azure.net/"
-        secret_client = SecretClient(vault_url=keyvault_url, credential=credential)
-        secret_name = "client-secret"
-        try:
-            secret = secret_client.get_secret(secret_name)
-            secret_value = secret.value
-          #  decoded_bytes = base64.b64decode(secret_value)
-         #   decoded_string = decoded_bytes.decode('utf-8')
-            # print(decoded_string)
-            if secret_value == client_secret:
-                print(f"Key Vault '{vault_name}' has the matching secret: '{secret_name}'")
-                matching_secret_found = True
-                break  # Stop the loop when a matching secret is found
-        except Exception as e:
-            print(f"Key Vault '{vault_name}' does not contain the secret: '{secret_name}'")
-    if not matching_secret_found:
-        print("No matching secret found in any of the Key Vaults.")
- 
-    # Authenticate to Azure
- 
-        try:
-            # Use Azure CLI to get the access token
-            access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
-        except subprocess.CalledProcessError:
-            print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
-            exit(1)
- 
-        # Create Azure Key Vault in the specified Resource Group
-        try:
-            subprocess.check_call(["az", "keyvault", "create", "--name", key_vault_name, "--resource-group", resource_group_name, "--location", "southcentralus"])
-            print(f"Azure Key Vault '{key_vault_name}' created successfully in Resource Group '{resource_group_name}'.")
-        except subprocess.CalledProcessError:
-            print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation in Resource Group '{resource_group_name}'.")
- 
-        
-        # Store secrets in Azure Key Vault
-        for key, value in secrets.items():
-            # Replace underscores with hyphens in the secret name
-            key = key.replace("_", "-")
-            #encoded_value = base64.b64encode(value.encode("utf-8")).decode("utf-8")     
-            #command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {encoded_value} --output none --query 'value'"
-            command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {value} --output none --query 'value'"
- 
-            try:
-                # Use Azure CLI to set the secret in the Key Vault
-                subprocess.check_call(["bash", "-c", f'AZURE_ACCESS_TOKEN="{access_token}" {command}'])
-                print(f"Secret '{key}' stored in Azure Key Vault '{key_vault_name}' successfully.")
-            except subprocess.CalledProcessError as e:
-                print(f"Error: Failed to store secret '{key}' in Azure Key Vault '{key_vault_name}'.")
-                print(e)
- 
-        
-        print("All secrets have been stored in Azure Key Vault.")
-        
-        os.remove(secrets_file_path)     
-        
-        with open(secrets_file_path, "w"):         pass
-    
-    ## ending the script
+    key_vault_name = account_name+"azure"
+    new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='azure')
+    db.session.add(new_user)
+    db.session.commit()
+    location = "eastus"  # Choose a valid Azure location without special characters
+    create_key_vault(key_vault_name,location,resource_group_name)
+    key_vault = f"https://{key_vault_name}.vault.azure.net/"
+    store_secrets(key_vault,"client-id", client_id)
+    store_secrets(key_vault,"client-secret", client_secret)
+    store_secrets(key_vault,"subscription-id", subscription_id)
+    store_secrets(key_vault,"tenant-id", tenant_id)
+    store_secrets(key_vault,"username", User_name)
+    store_secrets(key_vault,"account-name", account_name)
 
     return render_template('create_aks.html')
 
@@ -2903,7 +2979,8 @@ def json_update_azure_credential():
         client_secret = form['client_secret']
         tenant_id = form['tenant_id']
         User_name = form['User_name']
-        key_vault_name = User_name + "azure"
+        account_name = form['account_name']
+        key_vault_name = account_name + "azure"
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         
         key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
@@ -2946,130 +3023,30 @@ def json_submit_form_azure():
     client_secret = form['client_secret']
     tenant_id = form['tenant_id']
     User_name = form['User_name']
-    User_Id = str(int(random.random()))
- 
-    # Write Azure form data to terraform.vars file
-    with open('terraform.tfvars', 'w') as f:
-        f.write(f'username = "{User_name}"\n')
-        f.write(f'subscription_id = "{subscription_id}"\n')
-        f.write(f'client_id = "{client_id}"\n')
-        f.write(f'client_secret = "{client_secret}"\n')
-        f.write(f'tenant_id = "{tenant_id}"\n')
-   
-    ## starting the script
- 
-    # Azure Resource Group and Key Vault Configuration
+    account_name = form['account_name']
+
     resource_group_name = "Cockpit"  
-    key_vault_name = User_name+"azure"
-    secrets_file_path = "./terraform.tfvars"
-
-
-    user_detail = {
-        "user": User_name,
-        
-    }
-
-    print("User name:", User_name)
-
-    file_name = "user_name.json"
-
-    with open(file_name, 'w') as file:
-        json.dump(user_detail, file)
-
-    
-
- 
-   # Replace underscores with hyphens in the Key Vault and Resource Group names
-    key_vault_name = key_vault_name.replace("_", "-")
-    resource_group_name = resource_group_name.replace("_", "-")    
-    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
-    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
-    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
-    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
-    matching_secret_found = False
-    credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-    keyvault_client = KeyVaultManagementClient(credential, subscription_id)
-    # Read secrets from the file
-    secrets = {}
-    with open(secrets_file_path, "r") as file:
-        for line in file:
-            key, value = line.strip().split(" = ")
-            secrets[key] = value
-    with open("./terraform.tfvars", "r") as file:
-     for line in file:
-        if line.strip().startswith('client_secret'):
-            key, value = line.strip().split(' = ')
-            # print(value)
-            client_secret = value
- 
-    # print (client_secret)
- 
-    keyvaults = keyvault_client.vaults.list()
-    for vault in keyvaults:
-        vault_name = vault.name
-        keyvault_url = f"https://{vault_name}.vault.azure.net/"
-        secret_client = SecretClient(vault_url=keyvault_url, credential=credential)
-        secret_name = "client-secret"
-        try:
-            secret = secret_client.get_secret(secret_name)
-            secret_value = secret.value
-            #decoded_bytes = base64.b64decode(secret_value)
-            #decoded_string = decoded_bytes.decode('utf-8')
-            # print(decoded_string)
-            if secret_value == client_secret:
-                print(f"Key Vault '{vault_name}' has the matching secret: '{secret_name}'")
-                matching_secret_found = True
-                break  # Stop the loop when a matching secret is found
-        except Exception as e:
-            print(f"Key Vault '{vault_name}' does not contain the secret: '{secret_name}'")
-    if not matching_secret_found:
-        print("No matching secret found in any of the Key Vaults.")
- 
-    # Authenticate to Azure
- 
-        try:
-            # Use Azure CLI to get the access token
-            access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
-        except subprocess.CalledProcessError:
-            print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
-            exit(1)
- 
-        # Create Azure Key Vault in the specified Resource Group
-        try:
-            subprocess.check_call(["az", "keyvault", "create", "--name", key_vault_name, "--resource-group", resource_group_name, "--location", "southcentralus"])
-            print(f"Azure Key Vault '{key_vault_name}' created successfully in Resource Group '{resource_group_name}'.")
-        except subprocess.CalledProcessError:
-            print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation in Resource Group '{resource_group_name}'.")
-            return json.dumps({
-                "message" : "Azure Key Vault '{}' already exists or encountered an error during creation in Resource Group '{}'".format(key_vault_name, resource_group_name)
-            }),200
- 
-        
-        # Store secrets in Azure Key Vault
-        for key, value in secrets.items():
-            # Replace underscores with hyphens in the secret name
-            key = key.replace("_", "-")
-           # encoded_value = base64.b64encode(value.encode("utf-8")).decode("utf-8")     
-            #command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {encoded_value} --output none --query 'value'"
-            command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {value} --output none --query 'value'"
- 
-            try:
-                # Use Azure CLI to set the secret in the Key Vault
-                subprocess.check_call(["bash", "-c", f'AZURE_ACCESS_TOKEN="{access_token}" {command}'])
-                print(f"Secret '{key}' stored in Azure Key Vault '{key_vault_name}' successfully.")
-            except subprocess.CalledProcessError as e:
-                print(f"Error: Failed to store secret '{key}' in Azure Key Vault '{key_vault_name}'.")
-                print(e)
- 
-        
-        print("All secrets have been stored in Azure Key Vault.")
-        
-        os.remove(secrets_file_path)     
-        
-        with open(secrets_file_path, "w"):         pass
-     
-    ## ending the script
-
+    key_vault_name = account_name+"azure"
+    location = "eastus"  # Choose a valid Azure location without special characters
+    created = create_key_vault(key_vault_name,location,resource_group_name)
+    new_username_record = UsernameTable(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
+    if not created:
+                # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "these credentials already exist"}
+            return jsonify(error_msg), 200
+    key_vault = f"https://{key_vault_name}.vault.azure.net/"
+    store_secrets(key_vault,"client-id", client_id)
+    store_secrets(key_vault,"client-secret", client_secret)
+    store_secrets(key_vault,"subscription-id", subscription_id)
+    store_secrets(key_vault,"tenant-id", tenant_id)
+    store_secrets(key_vault,"username", User_name)
+    store_secrets(key_vault,"account-name", account_name)
+    new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='azure')
+    db.session.add(new_user)
+    db.session.commit()
+   
     return json.dumps( {
             "message": 'Credential Succesfully added',
             "statusCode": 200
@@ -3103,8 +3080,10 @@ def create_aks():
     aks_version = request.form.get('aks_version')
     node_count = request.form.get('node_count')
     cluster_type = request.form.get('cluster_type')
- 
- 
+    account_name = request.form.get('account_name')
+    new_username_record = UsernameTable(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     file_name = "./user_name.json"
  
     with open(file_name, 'r') as file:
@@ -3119,13 +3098,14 @@ def create_aks():
     user_data["aks_version"] = aks_version
     user_data["node_count"] = node_count
     user_data["cluster_type"] = cluster_type
+    user_data["account_name"] = account_name
  
  
     print("user name is:", user_data["user"])
-    user = Data(username=user_data["user"], cloudname='azure', clustername=user_data["aks_name"])
+    user = Data(username=account_name, cloudname='azure', clustername=user_data["aks_name"])
     db.session.add(user)
     db.session.commit()
-    file_name = f'terraform-{user_data["user"]}.tfvars'
+    file_name = f'terraform-{user_data["account_name"]}.tfvars'
     
  
     
@@ -3187,7 +3167,7 @@ private_cluster_enabled = "false"'''
     session['info'] = 'Some information'
  
     # Continuously check and store AKS cluster status in the background
-    check_and_store_aks_cluster_status(username=user_data["user"],resource_group=resource_group,aks_name=aks_name,Region=Region)
+    check_and_store_aks_cluster_status(username=account_name,resource_group=resource_group,aks_name=aks_name,Region=Region)
  
     return redirect(url_for('jobs_azure'))
     # return render_template('success.html')
@@ -3240,7 +3220,10 @@ def json_create_aks():
     aks_version = form['aks_version']
     node_count = form['node_count']
     cluster_type = form['cluster_type']
-    
+    account_name = form['account_name']
+    new_username_record = UsernameTable(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     file_name = "./user_name.json"
 
     try:
@@ -3262,7 +3245,7 @@ def json_create_aks():
 
     print("user name is:", user_data["user"])
 
-    file_name = f'terraform-{user_data["user"]}.tfvars'
+    file_name = f'terraform-{account_name}.tfvars'
     file_path = f'azure/template/{file_name}'    
 
     aks_version = float(aks_version)
@@ -3319,7 +3302,7 @@ node_count = "{node_count}"'''
     print("Uploading tf file to gitlab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
-    check_and_store_aks_cluster_status(username=user_data["user"],resource_group=resource_group,aks_name=aks_name,Region=Region)
+    check_and_store_aks_cluster_status(username=account_name,resource_group=resource_group,aks_name=aks_name,Region=Region)
 
     os.remove(file_name)
     os.remove("user_name.json")
@@ -3493,7 +3476,9 @@ def create_gcp():
     db.session.commit()
     file_name = f'terraform-{user_data["user"]}gcp.tfvars'
     file_path = f'/gcp/templates/{file_name}'
-
+    new_username_record = UsernameTablegcp(username={user_data["user"]})
+    db.session.add(new_username_record)
+    db.session.commit()
 
     tf_config = f'''
     project = "{project}"
@@ -3806,7 +3791,9 @@ def json_create_gke():
 
     file_name = f'terraform-{user_data["user"]}gcp.tfvars'
     file_path = f'gcp/template/{file_name}'
-
+    new_username_record = UsernameTablegcp(username={user_data["user"]})
+    db.session.add(new_username_record)
+    db.session.commit()
 
     tf_config = f'''
     project = "{project}"
@@ -3931,9 +3918,7 @@ def login():
             
             # Access the username from the user object and use it as needed
             username = user.username
-            new_username_record = UsernameTable(username=username)
-            db.session.add(new_username_record)
-            db.session.commit()
+            
             return redirect(next_page) if next_page else redirect(url_for('dashboard'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
@@ -3961,8 +3946,7 @@ def JsonLogin():
             file_name = "user_name.json"
             with open(file_name, 'w') as file:
                json.dump(user_detail, file)
-            db.session.add(new_username_record)
-            db.session.commit()
+            
 
             return jsonify({
                 "message": 'Login successful.',

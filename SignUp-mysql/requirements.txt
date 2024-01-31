@@ -21,6 +21,7 @@ python-decouple
 mysql-connector-python
 
 azure-identity
+azure-keyvault-administration
 
 azure.keyvault
 
