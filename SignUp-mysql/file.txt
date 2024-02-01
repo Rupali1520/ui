@@ -1,2 +1,3 @@
-aks_name = "somya"
-resource_group = "somya"
+eks-name = "abc"
+region = "us-east-1"
+node = "abc-eks-nodegroup"

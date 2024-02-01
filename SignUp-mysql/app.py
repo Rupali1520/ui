@@ -1,6 +1,7 @@
 from flask import Flask, session
 from flask import jsonify
 import boto3
+import botocore
 from azure.core.exceptions import ResourceNotFoundError
 from azure.keyvault.secrets import SecretClient
 import traceback
@@ -104,7 +105,12 @@ class aks_cluster(db.Model):
     resource_group = db.Column(db.String(255), nullable=False)
     region = db.Column(db.String(255), nullable=False)
     aks_name = db.Column(db.String(255), nullable=False)
- 
+class eks_cluster(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False)
+    cloudname = db.Column(db.String(255), nullable=False)
+    region = db.Column(db.String(255), nullable=False)
+    eks_name = db.Column(db.String(255), nullable=False)
     def __repr__(self):
         return f"aks_cluster('{self.username}')"
 class Data(db.Model):
@@ -353,13 +359,13 @@ def jobs_aws():
             job = project.jobs.get(job_id)
             
             # Get the job details
-            created_at = job.created_at_str
+            created_at = job.created_at
             utc_time = datetime.strptime(created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
             utc_time = utc_time.replace(tzinfo=pytz.UTC)
             ist_time = utc_time.astimezone(pytz.timezone('Asia/Kolkata'))
-            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')
+            created_at_str = ist_time.strftime('%Y-%m-%d %H:%M:%S')        
             status = job.status
-            output = f"Created At: {created_at_str}, Created By: {username}, AKS Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
+            output = f"Created At: {created_at_str}, Created By: {username}, eks Status: {status}, Job Name: {job_name}, Job ID: <a href='/logs-azure?job-id={job_id}'>{job_id}</a>"
             outputs.append(output)
             print(output)
  
@@ -990,27 +996,82 @@ def dashboard_cloud():
         return render_template('dashboard-cloud.html', username=username)
     else:
         return redirect(url_for('login'))
-
 @app.route('/show-details-aws', methods=['GET', 'POST'])
 def show_details_aws():
     if current_user.is_authenticated:
         username = current_user.username
-        name = username+"aws"
-        key_vault_url = f"https://{name}.vault.azure.net/"
-    
-        # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
+        accounts = get_account(username,'aws')
+        return render_template('show-details-aws.html', username=username,accounts=accounts)
+        
+    else:
+        return redirect(url_for('login'))
+@app.route('/json_get_credential_aws', methods=['GET', 'POST'])
+def json_get_credential_aws():
+    try:
+        form_data = request.get_json()
+        account_name = form_data['account_name']
+       
+        key_vault_name = account_name+"aws"
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
 
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Credential not found."}
+            return jsonify(error_msg), 200
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
         # Create a SecretClient using the Key Vault URL
         secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
 
-        # Retrieve the secrets
+        # Retrieve the secret containing your Azure credentials
         secret_access_key = secret_client.get_secret("secret-Access-key").value
         access_key = secret_client.get_secret("Access-key").value
+        response_data = {
+            "secret_Access_key": secret_access_key,
+            "Access_key": access_key
+        }
+        return jsonify(response_data), 200
 
-        return render_template('show-details-aws.html', access_key=access_key, secret_access_key=secret_access_key, username=username)
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "accounts are not avilable."}
+        return jsonify(error_msg), 200
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+@app.route('/get_credential_aws', methods=['GET', 'POST'])
+def get_credential_aws():
+    if current_user.is_authenticated:
+        username = current_user.username
+        account_name = request.form.get('account_name')
+        accounts = get_account(username,'aws')
+        key_vault_name = account_name+"aws"
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            return render_template('show-details-aws.html', message="credential not found",username=username,accounts=accounts)
+        # Use DefaultAzureCredential to automatically authenticate
+        #credential = DefaultAzureCredential()
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        secret_access_key = secret_client.get_secret("secret-Access-key").value
+        access_key = secret_client.get_secret("Access-key").value
+        return render_template('show-details-aws.html', username=username,accounts=accounts,access_key=access_key, secret_access_key=secret_access_key)
+        
     else:
         return redirect(url_for('login'))
+   
 
 def export_azure_credentials():
     os.environ["AZURE_CLIENT_ID"] = "ad3b9e95-c03c-4728-840e-cbd8c75ea353"
@@ -1042,35 +1103,12 @@ def json_show_details_aws():
     try:
         form_data = request.get_json()
         username = form_data['username']
-        key_vault_name = username + "aws"
-        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
-
-        if not key_vault_exists:
-            # Handle the case when the Key Vault doesn't exist
-            error_msg = {"message": "Credential not found."}
-            return jsonify(error_msg), 200
-
-        # Key Vault exists, proceed with retrieving secrets
-        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
-        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
-        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
-
-        # Retrieve the secrets
-        secret_access_key = secret_client.get_secret("secret-Access-key").value
-        access_key = secret_client.get_secret("Access-key").value
-
-        # Return JSON response
-        response_data = {
-            "access_key": access_key,
-            "secret_access_key": secret_access_key,
-            "username": username
-        }
-
-        return jsonify(response_data), 200
+        accounts = get_account(username,'aws')
+        return jsonify(accounts), 200
 
     except ResourceNotFoundError:
         # Handle the case when a specific secret doesn't exist
-        error_msg = {"message": "Credentials not found."}
+        error_msg = {"message": "accounts are not avilable."}
         return jsonify(error_msg), 200
 
     except HttpResponseError as e:
@@ -1291,119 +1329,27 @@ def my_cluster():
     else:
         return redirect(url_for('login'))
 
-@app.route('/my-cluster-details-aws', methods=['GET', 'POST'])
-def my_cluster_details_aws():
-    if current_user.is_authenticated:
-        username = current_user.username
-
-        # Azure Key Vault details for AWS
-        name = username + "aws"
-
-        # Format the Key Vault URL
-        key_vault_url_aws = f"https://{name}.vault.azure.net/"
-
-        # Secret names
-        access_key_secret = "Access-key"
-        secret_access_key_secret = "secret-Access-key"
-
-        try:
-            # Retrieve credentials from Azure Key Vault
-            credential_aws = DefaultAzureCredential()
-            secret_client_aws = SecretClient(vault_url=key_vault_url_aws, credential=credential_aws)
-
-            # Retrieve the secrets from Key Vault
-            aws_access_key = secret_client_aws.get_secret(access_key_secret).value
-            aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
-
-            # Get AWS region from the form data
-            region = request.form.get('tenant_id')
-
-            # Set up Boto3 client with retrieved credentials and region
-            eks_client = boto3.client(
-                'eks',
-                aws_access_key_id=aws_access_key,
-                aws_secret_access_key=aws_secret_access_key,
-                region_name='us-east-1'
-            )
-
-            clusters_data = []
-
-            # List ready or healthy EKS clusters in the specified AWS region
-            eks_clusters = eks_client.list_clusters()
-            for cluster_name in eks_clusters['clusters']:
-                cluster_info = eks_client.describe_cluster(name=cluster_name)
-                if cluster_info['cluster']['status'] == 'ACTIVE':
-                    clusters_data.append({"name": cluster_name})
-
-            return render_template('my-cluster-details-aws.html', username=username, cluster=clusters_data)
-        except Exception as e:
-            # Print error details and traceback
-            print(f"Error in my_cluster_details_aws: {str(e)}")
-            traceback.print_exc()
-
-            # Return an error response or redirect as needed
-            return render_template('error.html', error_message="An error occurred. Please try again later.")
-    else:
-        return redirect(url_for('login'))
 
 @app.route('/json-my-cluster-details-aws', methods=['POST'])
 def json_my_cluster_details_aws():
-        form = request.get_json()
-        username = form['username']
+    form = request.get_json()
+    account = form['account_name']
 
-        # Azure Key Vault details for AWS
-        name = username + "aws"
+    try:
+        # Query the database to get AKS cluster names for the given username
+        eks_names = get_cluster_aws(account)
 
-        # Format the Key Vault URL
-        key_vault_url_aws = f"https://{name}.vault.azure.net/"
+        # Check if there are no AKS clusters available
+        if not eks_names:
+            return jsonify({"message": "No EKS clusters available for the given user."}), 200
 
-        # Secret names
-        access_key_secret = "Access-key"
-        secret_access_key_secret = "secret-Access-key"
+        # Return JSON response with AKS cluster names
+        return jsonify({"eks_cluster": eks_names}), 200
 
-        try:
-            # Retrieve credentials from Azure Key Vault
-            credential_aws = DefaultAzureCredential()
-            secret_client_aws = SecretClient(vault_url=key_vault_url_aws, credential=credential_aws)
-
-            # Retrieve the secrets from Key Vault
-            aws_access_key = secret_client_aws.get_secret(access_key_secret).value
-            aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
-
-            # Get AWS region from the form data
-            region = request.form.get('tenant_id')
-
-            # Set up Boto3 client with retrieved credentials and region
-            eks_client = boto3.client(
-                'eks',
-                aws_access_key_id=aws_access_key,
-                aws_secret_access_key=aws_secret_access_key,
-                region_name='us-east-1'
-            )
-
-            clusters_data = []
-
-            # List ready or healthy EKS clusters in the specified AWS region
-            eks_clusters = eks_client.list_clusters()
-            for cluster_name in eks_clusters['clusters']:
-                cluster_info = eks_client.describe_cluster(name=cluster_name)
-                if cluster_info['cluster']['status'] == 'ACTIVE':
-                    clusters_data.append({"name": cluster_name})
-
-            if not clusters_data:
-            # Handle the case when there are no clusters
-              return jsonify({"username": username, "clusters": [], "message": "No clusters available."}), 200
-
-            return jsonify({"username": username, "clusters": clusters_data}),200
-        except Exception as e:
-            # Print error details and traceback
-            print(f"Error in my_cluster_details_aws: {str(e)}")
-            traceback.print_exc()
-
-            # Return an error response or redirect as needed
-            return jsonify({"error_message": "An error occurred. Please try again later."}),404
-
-
+    except Exception as e:
+        # Handle other exceptions (e.g., database connection error)
+        print(f"Error: {str(e)}")
+        return jsonify({"error_message": "An error occurred while fetching EKS cluster details."}), 500
 @app.route('/my-cluster-details', methods=['GET', 'POST'])
 def my_cluster_details():
     if current_user.is_authenticated:
@@ -1437,6 +1383,24 @@ def get_azure_cluster():
             return render_template('error.html', error_message=str(e))
     else:
         return redirect(url_for('login'))
+@app.route('/get_aws_cluster', methods=['GET', 'POST'])
+def get_aws_cluster():
+    if current_user.is_authenticated:
+        username = current_user.username
+        account = request.form.get('account_name')
+       
+
+        try:
+            # Retrieve credentials from Azure Key Vault
+            eks_names = get_cluster_aws(account)
+
+            return render_template('my-cluster-details-aws.html', username=username,eks_clusters=eks_names)
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            # Handle the exception appropriately, e.g., return an error page
+            return render_template('error.html', error_message=str(e))
+    else:
+        return redirect(url_for('login'))
 def get_cluster_azure(account_name):
         db_config = {
         'host': '20.207.117.166',
@@ -1454,6 +1418,23 @@ def get_cluster_azure(account_name):
         cursor.close()
         connection.close()
         return name
+def get_cluster_aws(account_name):
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+    
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = f"SELECT distinct eks_name FROM eks_cluster WHERE username = '{account_name}'"
+        cursor.execute(query)
+        name = [result[0] for result in cursor.fetchall()]
+        cursor.close()
+        connection.close()
+        return name
 @app.route('/my-cluster-details-azure', methods=['GET', 'POST'])
 def my_cluster_details_azure():
     if current_user.is_authenticated:
@@ -1466,7 +1447,18 @@ def my_cluster_details_azure():
 
     else:
         return redirect(url_for('login'))
+@app.route('/my-cluster-details-aws', methods=['GET', 'POST'])
+def my_cluster_details_aws():
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'aws')
+    
+            
 
+        return render_template('my-cluster-details-aws.html', username=username,accounts=accounts)
+
+    else:
+        return redirect(url_for('login'))
 
 
    
@@ -1997,25 +1989,37 @@ def aws():
     return render_template('aws.html')
 @app.route('/aws1')
 def aws1():
-    return render_template('aws1.html')
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'aws')
+        return render_template('aws1.html', username=username,accounts=accounts)
+        
+    else:
+        return redirect(url_for('login'))
 @app.route('/aws2')
 def aws2():
-    return render_template('aws2.html')
+    if current_user.is_authenticated:
+        username = current_user.username
+        accounts = get_account(username,'aws')
+        return render_template('aws2.html', username=username,accounts=accounts)
+        
+    else:
+        return redirect(url_for('login'))
 @app.route('/delete_aws_credential', methods=['POST'])
 def delete_aws_credential():
-    User_name = request.form.get('User_name')
-    key_vault_name = User_name+"aws"
+    Account_name = request.form.get('account_name')
+    key_vault_name = Account_name+"aws"
     resource_group = "Cockpit"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
     delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
- 
+    delete_account(Account_name,'aws')
     return render_template('final-dashboard.html')
 @app.route('/json_delete_aws_credential', methods=['POST'])
 def json_delete_aws_credential():
     try:
         form = request.get_json()
-        User_name = form['user_name']
-        key_vault_name = User_name+"aws"
+        account_name = form['account_name']
+        key_vault_name = account_name+"aws"
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
         if not key_vault_exists:
@@ -2023,6 +2027,7 @@ def json_delete_aws_credential():
             error_msg = {"message": "Invaild username."}
             return jsonify(error_msg), 404
         delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', 'Cockpit', key_vault_name)
+        delete_account(account_name,'aws')
         return json.dumps( {
                 "message": 'Credential delete successfully',
                 "statusCode": 200
@@ -2048,7 +2053,8 @@ def json_update_aws_credential():
         Access_key = form['access_key']
         secret_Access_key = form['secret_access_key']
         User_name = form['user_name']
-        key_vault_name = User_name+"aws"
+        account_name = form['account_name']
+        key_vault_name = account_name+"aws"
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
         if not key_vault_exists:
@@ -2080,262 +2086,71 @@ def update_aws_credential():
     Access_key = request.form.get('Access_key')
     secret_Access_key = request.form.get('secret_Access_key')
     User_name = request.form.get('User_name')
-    key_vault_name = User_name+"aws"
+    account_name = request.form.get('account_name')
+    key_vault_name = account_name+"aws"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
     update_keyvault_secret(vault_url, "Access-key", Access_key)
     update_keyvault_secret(vault_url, "secret-Access-key", secret_Access_key)
  
     return render_template('final-dashboard.html')
-
 @app.route('/json_submit_form_aws', methods=['POST'])
 def json_submit_form_aws():
-# Get  AWS form data
-    
     form = request.get_json()
     Access_key = form['access_key']
     secret_Access_key = form['secret_access_key']
-    User_name = form['user_name']
-    User_Id = str(int(random.random()))
+    User_name = form['User_name']
+    account_name = form['account_name']
 
-    user_detail = {
-        "user": User_name,
-        
-    }
-
-    print("User name:", User_name)
-
-    file_name = "user_name.json"
-
-    with open(file_name, 'w') as file:
-        json.dump(user_detail, file)
- 
- 
- 
-    # Write AWS form data to terraform.vars file
-    with open('terraform.tfvars', 'w') as f:
-        f.write(f'Username = "{User_name}"\n')
-        f.write(f'Access_key = "{Access_key}"\n')
-        f.write(f'secret_Access_key = "{secret_Access_key}"\n')
-    
- 
-     ## starting the script
- 
-    # Azure Resource Group and Key Vault Configuration
     resource_group_name = "Cockpit"  
-    key_vault_name = User_name+"aws"
-    secrets_file_path = "./terraform.tfvars"
- 
-    
- 
-    # Replace underscores with hyphens in the Key Vault and Resource Group names
-    key_vault_name = key_vault_name.replace("_", "-")
-    resource_group_name = resource_group_name.replace("_", "-")
- 
-    
-    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
-    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
-    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
-    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
-    matching_secret_found = False
-    credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-    keyvault_client = KeyVaultManagementClient(credential, subscription_id)
-    # Read secrets from the file
-    secrets = {}
-    with open(secrets_file_path, "r") as file:
-        for line in file:
-            key, value = line.strip().split(" = ")
-            secrets[key] = value
-    with open("./terraform.tfvars", "r") as file:
-       for line in file:
-          if line.strip().startswith('Access_key'):
-             key, value = line.strip().split(" = ")
-             Access_key = value    
-    
- 
-    
-    keyvaults = keyvault_client.vaults.list()
-    for vault in keyvaults:
-        vault_name = vault.name
-        keyvault_url = f"https://{vault_name}.vault.azure.net/"
-        Accesskey = SecretClient(vault_url=keyvault_url, credential=credential)
-        key_name = "Access_key"
-        try:
-          key = Accesskey.get_secret(key_name)
-          key_value = key.value
-         # decoded_bytes = base64.b64decode(key_value)
-         # decoded_string = decoded_bytes.decode('utf-8')
-          if key_value == Access_key:
-                print(f"Key Vault '{vault_name}' has the matching secret: '{key_name}'")
-                matching_secret_found = True
-                break 
-        except Exception as e:
-             print(f"Key Vault '{vault_name}' does not contain the secret: '{key_name}'")
-    if not matching_secret_found:
-       print("No matching secret found in any of the Key Vaults.")
-       
-    # Authenticate to Azure
-       try:
-            # Use Azure CLI to get the access token
-            access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
-       except subprocess.CalledProcessError:
-            print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
-            exit(1)
-       
- 
-    # Create Azure Key Vault in the specified Resource Group
-       try:
-        subprocess.check_call(["az", "keyvault", "create", "--name", key_vault_name, "--resource-group", resource_group_name, "--location", "southcentralus"])
-        print(f"Azure Key Vault '{key_vault_name}' created successfully in Resource Group '{resource_group_name}'.")
-       except subprocess.CalledProcessError:
-        print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation in Resource Group '{resource_group_name}'.")
- 
-    
- 
-    # Store secrets in Azure Key Vault
-       for key, value in secrets.items():
-        # Replace underscores with hyphens in the secret name
-         key = key.replace("_", "-")
-         #encoded_value = base64.b64encode(value.encode("utf-8")).decode("utf-8")     
-         #command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {encoded_value} --output none --query 'value'"
-         command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {value} --output none --query 'value'"
- 
-    
- 
-         try:
-            # Use Azure CLI to set the secret in the Key Vault
-            subprocess.check_call(["bash", "-c", f'AZURE_ACCESS_TOKEN="{access_token}" {command}'])
-            print(f"Secret '{key}' stored in Azure Key Vault '{key_vault_name}' successfully.")
-         except subprocess.CalledProcessError as e:
-            print(f"Error: Failed to store secret '{key}' in Azure Key Vault '{key_vault_name}'.")
-            print(e)
- 
-    
- 
-       print("All secrets have been stored in Azure Key Vault.")
-    
- 
-       os.remove(secrets_file_path)     
-    
- 
-       with open(secrets_file_path, "w"):         pass
- 
-    ## ending the script
-       return json.dumps( {
+    key_vault_name = account_name+"aws"
+    location = "eastus"  # Choose a valid Azure location without special characters
+    created = create_key_vault(key_vault_name,location,resource_group_name)
+    new_username_record = UsernameTableaws(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
+    if not created:
+                # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "these credentials already exist"}
+            return jsonify(error_msg), 200
+    key_vault = f"https://{key_vault_name}.vault.azure.net/"
+    store_secrets(key_vault,"Access-key", Access_key)
+    store_secrets(key_vault,"secret-Access-key", secret_Access_key)
+    store_secrets(key_vault,"username", User_name)
+    store_secrets(key_vault,"account-name", account_name)
+    new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='aws')
+    db.session.add(new_user)
+    db.session.commit()
+   
+    return json.dumps( {
             "message": 'Credential Succesfully added',
             "statusCode": 200
-       }) 
-    #return render_template('./create_aws.html')
- 
+    })
+
 @app.route('/submit_form', methods=['POST'])
 def submit_form_aws():
-# Get  AWS form data
-
+    # Get  azure form data
     Access_key = request.form.get('Access_key')
     secret_Access_key = request.form.get('secret_Access_key')
+    account_name = request.form.get('account_name')
     User_name = request.form.get('User_name')
-    User_Id = str(int(random.random()))
-
-    user_detail = {
-        "user": User_name,
-        
-    }
-
-    print("User name:", User_name)
-
-    file_name = "user_name.json"
-
-    with open(file_name, 'w') as file:
-        json.dump(user_detail, file)
- 
- 
- 
-    # Write AWS form data to terraform.vars file
-    with open('terraform.tfvars', 'w') as f:
-        f.write(f'Username = "{User_name}"\n')
-        f.write(f'Access_key = "{Access_key}"\n')
-        f.write(f'secret_Access_key = "{secret_Access_key}"\n')
-    
- 
-     ## starting the script
- 
-    # Azure Resource Group and Key Vault Configuration
     resource_group_name = "Cockpit"  
-    key_vault_name = User_name+"aws"
-    secrets_file_path = "./terraform.tfvars"
- 
-    
- 
-    # Replace underscores with hyphens in the Key Vault and Resource Group names
-    key_vault_name = key_vault_name.replace("_", "-")
-    resource_group_name = resource_group_name.replace("_", "-")
- 
-    
-    subscription_id = 'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5'
-    client_id = 'ad3b9e95-c03c-4728-840e-cbd8c75ea353'
-    client_secret = 'p268Q~SIJlP6FViKhI.M4B6d7dB5Tr95PZHYqczI'
-    tenant_id = '097b85e8-2f0c-4726-a9d5-af15f7621ce5'
-    matching_secret_found = False
-    credential = ClientSecretCredential(tenant_id, client_id, client_secret)
-    keyvault_client = KeyVaultManagementClient(credential, subscription_id)
-    # Read secrets from the file
-    secrets = {}
-    with open(secrets_file_path, "r") as file:
-        for line in file:
-            key, value = line.strip().split(" = ")
-            secrets[key] = value
-    
-    
- 
-    
- 
-    # Authenticate to Azure
-    try:
-        # Use Azure CLI to get the access token
-        access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
-    except subprocess.CalledProcessError:
-        print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
-        exit(1)
- 
- 
-    # Create Azure Key Vault in the specified Resource Group
-    try:
-        subprocess.check_call(["az", "keyvault", "create", "--name", key_vault_name, "--resource-group", resource_group_name, "--location", "southcentralus"])
-        print(f"Azure Key Vault '{key_vault_name}' created successfully in Resource Group '{resource_group_name}'.")
-    except subprocess.CalledProcessError:
-        print(f"Azure Key Vault '{key_vault_name}' already exists or encountered an error during creation in Resource Group '{resource_group_name}'.")
- 
-    
- 
-    # Store secrets in Azure Key Vault
-    for key, value in secrets.items():
-        # Replace underscores with hyphens in the secret name
-        key = key.replace("_", "-")
-        #encoded_value = base64.b64encode(value.encode("utf-8")).decode("utf-8")     
-        #command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {encoded_value} --output none --query 'value'"
-        command = f"az keyvault secret set --vault-name {key_vault_name} --name {key} --value {value} --output none --query 'value'"
- 
-    
- 
-        try:
-            # Use Azure CLI to set the secret in the Key Vault
-            subprocess.check_call(["bash", "-c", f'AZURE_ACCESS_TOKEN="{access_token}" {command}'])
-            print(f"Secret '{key}' stored in Azure Key Vault '{key_vault_name}' successfully.")
-        except subprocess.CalledProcessError as e:
-            print(f"Error: Failed to store secret '{key}' in Azure Key Vault '{key_vault_name}'.")
-            print(e)
- 
-    
- 
-    print("All secrets have been stored in Azure Key Vault.")
-    
- 
-    os.remove(secrets_file_path)     
-    
- 
-    with open(secrets_file_path, "w"):         pass
- 
-    ## ending the script
+    key_vault_name = account_name+"aws"
+    new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='aws')
+    db.session.add(new_user)
+    db.session.commit()
+    new_username_record = UsernameTableaws(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
+    location = "eastus"  # Choose a valid Azure location without special characters
+    create_key_vault(key_vault_name,location,resource_group_name)
+    key_vault = f"https://{key_vault_name}.vault.azure.net/"
+    store_secrets(key_vault,"Access-key", Access_key)
+    store_secrets(key_vault,"secret-Access-key", secret_Access_key)
+    store_secrets(key_vault,"username", User_name)
+    store_secrets(key_vault,"account-name", account_name)
+
     return render_template('create_aws.html')
+
 
 @app.route('/aws_form', methods=['GET'])
 def aws_form():
@@ -2528,7 +2343,7 @@ def json_delete_gke():
 
 @app.route('/delete_eks', methods=['POST'])
 def delete_eks():
-    
+    account_name = request.form.get('account_name')
     eks_name = request.form.get('eks_name')
     Region = request.form.get('Region')
     Node = request.form.get('ng_name')
@@ -2552,21 +2367,77 @@ def delete_eks():
     region = "{Region}"
     node = "{Node}"
     '''
+
     file_content_normalized = file_content.strip().replace('\r\n', '\n')
     tf_config_normalized = tf_config.strip().replace('\r\n', '\n')
-    if file_content_normalized == tf_config_normalized:
-        print("same contant")
-        return render_template('aws_del.html')
-    else:
-        print("Uploading tf file to gitlab")
-        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-        print("Tf File uploaded successfully")
-        return render_template('success.html')
+    
+    print("Uploading tf file to gitlab")
+    key_vault = account_name + "aws"
 
+    new_username_record = UsernameTableaws(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
+    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+    check_and_delete_eks('us-east-1',eks_name,key_vault)
+    print("Tf File uploaded successfully")
+    return render_template('success.html')
+def check_and_delete_eks(region, eks_name, key_vault):
+    
+    while True:
+        print("not")
+        key_vault_url = f"https://{key_vault}.vault.azure.net/"
+        eks_status = get_eks_cluster_status_with_keyvault(eks_name, region, 'Access-key','secret-Access-key',key_vault_url)
+        if not eks_status:
+            cluster_info = eks_cluster.query.filter_by(eks_name=eks_name, region="us-east-1").one_or_none()
+            if cluster_info:   
+              print("yes")          # If the row exists, delete it            
+              db.session.delete(cluster_info)             
+              db.session.commit()
+              break
+        print("time")
+        time.sleep(360)
+        
+def get_eks_cluster_status_with_keyvault(eks_name, region, access_key_secret, secret_access_key_secret,key_vault_url):
+    try:
+        # Retrieve credentials from Azure Key Vault
+        credential_aws = DefaultAzureCredential()
+        secret_client_aws = SecretClient(vault_url=key_vault_url, credential=credential_aws)
+
+        # Retrieve the secrets from Key Vault
+        aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+        aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
+
+        # Initialize the Boto3 EKS client with retrieved AWS credentials
+        eks_client = boto3.client('eks', region_name=region, aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_access_key)
+
+        # Describe the EKS cluster
+        response = eks_client.describe_cluster(name=eks_name)
+
+        # Get the EKS cluster status
+        cluster_status = response['cluster']['status'].lower()
+
+        if cluster_status == "deleting":
+            print("EKS cluster is in 'deleting' state.")
+            return True
+        else:
+            print("EKS cluster is not in 'deleting' state.")
+            return False  # You can handle other states as needed
+
+    except botocore.exceptions.ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code")
+        if error_code == "ResourceNotFoundException":
+            # If the cluster is not found, return False
+            return False
+        else:
+            # Handle other exceptions if needed
+            print(f"Error: {e}")
+            return False
+ # You can handle other states as needed
 @app.route('/json_delete_eks', methods=['POST'])
 def json_delete_eks():
     try:
         form = request.get_json()
+        account_name = form['account_name']
         eks_name = form['eks_name']
         region = form['region']
         node = form['node']
@@ -2582,10 +2453,18 @@ def json_delete_eks():
         region = "{region}"
         node = "{node}"
         '''
+
         print("Configuration:", tf_config)
         print("Uploading tf file to gitlab")
+        key_vault = account_name + "aws"
+
+        new_username_record = UsernameTableaws(username=account_name)
+        db.session.add(new_username_record)
+        db.session.commit()
         upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        check_and_delete_eks('us-east-1',eks_name,key_vault)
         print("Tf File uploaded successfully")
+      
 
         # Return JSON response
         response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline please wait sometime...'}
@@ -2598,132 +2477,192 @@ def json_delete_eks():
 
 @app.route('/json_create_aws', methods=['POST'])
 def json_create_aws():
-    # Retrieve form data
-    form = request.get_json()
-    eks_name = form['cluster_name']
-    Region = form['region']
-    instance_type = form['instance_type']
-    eks_version = form['eks_version']
-    desired_size = form['desired_size']
-    max_size = form['max_size']
-    min_size = form['min_size']
-    cluster_type = form['cluster_type']
+   
+        form = request.get_json()
+        account_name = form['account_name']
+        eks_name = form['eks_name']
+        Region = form['region']
+        instance_type = form['instance_type']
+        eks_version = form['eks_version']
+        desired_size = form['desired_size']
+        max_size = form['max_size']
+        min_size = form['min_size']
+        cluster_type = form['cluster_type']
+        eks_version = float(eks_version)
     
-    # user = Data(username=user_data["user"], cloudname='aws', clustername=user_data["eks_name"])
-    # db.session.add(user)
-    # db.session.commit()
-    eks_version = float(eks_version)
- 
-    # Create the content for terraform.tfvars
-    with open('terraform.tfvars', 'w') as f:
-        f.write(f'eks_name = "{eks_name}"\n')
-        f.write(f'Region = "{Region}"\n')
-        f.write(f'instance_type = "{instance_type}"\n')
-        f.write(f'eks_version = "{eks_version}"\n')
-        f.write(f'desired_size = "{desired_size}"\n')
-        f.write(f'max_size = "{max_size}"\n')
-        f.write(f'min_size = "{min_size}"\n')
-        f.write(f'cluster_type = "{cluster_type}"\n')
+        # Create the content for terraform.tfvars
+        with open('terraform.tfvars', 'w') as f:
+            f.write(f'eks_name = "{eks_name}"\n')
+            f.write(f'Region = "{Region}"\n')
+            f.write(f'instance_type = "{instance_type}"\n')
+            f.write(f'eks_version = "{eks_version}"\n')
+            f.write(f'desired_size = "{desired_size}"\n')
+            f.write(f'max_size = "{max_size}"\n')
+            f.write(f'min_size = "{min_size}"\n')
+            f.write(f'cluster_type = "{cluster_type}"\n')
 
-    file_name = "./user_name.json"
+        # file_name = "./user_name.json"
 
-    with open(file_name, 'r') as file:
-        user_data = json.load(file)
+        # with open(file_name, 'r') as file:
+        #     user_data = json.load(file)
+        key_vault = account_name+"aws"
+        file_name = f'terraform-{account_name}.tfvars'
+        file_path = f'aws/templates/{file_name}'
+        new_username_record = UsernameTableaws(username=account_name)
+        db.session.add(new_username_record)
+        db.session.commit()
+        tf_config = f'''
+    cluster_name = "{eks_name}"
+    region = "{Region}"
+    instance_type = "{instance_type}"
+    eks_version = "{eks_version}"
+    desired_size = "{desired_size}"
+    max_size = "{max_size}"
+    min_size = "{min_size}"
+    cluster_type = "{cluster_type}"
+    '''
+        print("Configuration:", tf_config)
 
-    file_name = f'terraform-{user_data["user"]}.tfvars'
-    file_path = f'aws/templates/{file_name}'
-    new_username_record = UsernameTableaws(username={user_data["user"]})
-    db.session.add(new_username_record)
-    db.session.commit()
-    tf_config = f'''
-cluster_name = "{eks_name}"
-region = "{Region}"
-instance_type = "{instance_type}"
-eks_version = "{eks_version}"
-desired_size = "{desired_size}"
-max_size = "{max_size}"
-min_size = "{min_size}"
-cluster_type = "{cluster_type}"
-'''
-    print("Configuration:", tf_config)
+        print("Configuration:", tf_config)
 
-    print("Configuration:", tf_config)
+        
+        print("Uploading tf file to gitlab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+        check_and_store_eks_cluster_status(account_name, eks_name, 'us-east-1',key_vault)
 
-    
-    print("Uploading tf file to gitlab")
-    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    print("Tf File uploaded successfully")
-
-
-    # You can also redirect the user to a success page if needed
-    return json.dumps({
-        "message": "pipeline triggerd eks will be created..."
-    })
+        # You can also redirect the user to a success page if needed
+        return json.dumps({
+            "message": "Cluster created",
+            "statusCode": 200
+        })
 
 
 @app.route('/create_aws', methods=['POST'])
 def create_aws():
-
+    if current_user.is_authenticated:
+        username = current_user.username
     # Retrieve form data
-    eks_name = request.form.get('cluster_name')
-    Region = request.form.get('region')
-    instance_type = request.form.get('instance_type')
-    eks_version = request.form.get('eks_version')
-    desired_size = request.form.get('desired_size')
-    max_size = request.form.get('max_size')
-    min_size = request.form.get('min_size')
-    cluster_type = request.form.get('cluster_type')
+        account_name = request.form.get('account_name')
+        eks_name = request.form.get('eks_name')
+        Region = request.form.get('Region')
+        instance_type = request.form.get('instance_type')
+        eks_version = request.form.get('eks_version')
+        desired_size = request.form.get('desired_size')
+        max_size = request.form.get('max_size')
+        min_size = request.form.get('min_size')
+        cluster_type = request.form.get('cluster_type')
+        
+        eks_version = str(eks_version)
+        eks_version = version.parse(eks_version)
     
-    eks_version = str(eks_version)
-    eks_version = version.parse(eks_version)
+        # Create the content for terraform.tfvars
+        with open('terraform.tfvars', 'w') as f:
+            f.write(f'eks_name = "{eks_name}"\n')
+            f.write(f'Region = "{Region}"\n')
+            f.write(f'instance_type = "{instance_type}"\n')
+            f.write(f'eks_version = "{eks_version}"\n')
+            f.write(f'desired_size = "{desired_size}"\n')
+            f.write(f'max_size = "{max_size}"\n')
+            f.write(f'min_size = "{min_size}"\n')
+            f.write(f'cluster_type = "{cluster_type}"\n')
+
+        # file_name = "./user_name.json"
+
+        # with open(file_name, 'r') as file:
+        #     user_data = json.load(file)
+    
+        # user = Data(username=user_data["user"], cloudname='aws', clustername=eks_name)
+        # db.session.add(user)
+        # db.session.commit()
+        key_vault = account_name+"aws"
+        file_name = f'terraform-{account_name}.tfvars'
+        file_path = f'aws/templates/{file_name}'
+        new_username_record = UsernameTableaws(username=account_name)
+        db.session.add(new_username_record)
+        db.session.commit()
+        tf_config = f'''
+    cluster_name = "{eks_name}"
+    region = "{Region}"
+    instance_type = "{instance_type}"
+    eks_version = "{eks_version}"
+    desired_size = "{desired_size}"
+    max_size = "{max_size}"
+    min_size = "{min_size}"
+    cluster_type = "{cluster_type}"
+    '''
+        print("Configuration:", tf_config)
+
+        # print("Configuration:", tf_config)
+
+        
+        print("Uploading tf file to gitlab")
+        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+        print("Tf File uploaded successfully")
+        check_and_store_eks_cluster_status(account_name, eks_name, 'us-east-1',key_vault)
+        # You can also redirect the user to a success page if needed
+        session['info'] = 'Some information'
+
+        return redirect(url_for('jobs_aws'))
+def check_and_store_eks_cluster_status(account, eks_name, Region,key_vault):
+    while True:
+        # Check the AKS cluster status (replace this with your actual implementation)
+        aks_cluster_created = check_eks_cluster(eks_name,'us-east-1',key_vault)
  
-    # Create the content for terraform.tfvars
-    with open('terraform.tfvars', 'w') as f:
-        f.write(f'eks_name = "{eks_name}"\n')
-        f.write(f'Region = "{Region}"\n')
-        f.write(f'instance_type = "{instance_type}"\n')
-        f.write(f'eks_version = "{eks_version}"\n')
-        f.write(f'desired_size = "{desired_size}"\n')
-        f.write(f'max_size = "{max_size}"\n')
-        f.write(f'min_size = "{min_size}"\n')
-        f.write(f'cluster_type = "{cluster_type}"\n')
+        if aks_cluster_created:
+            # Store AKS cluster information in the database
+            store_eks_cluster_info(account, 'aws', 'us-east-1', eks_name)
+            break  # Break the loop once the AKS cluster is created
+ 
+        # Add a sleep interval to avoid continuous checking and reduce resource usage
+        time.sleep(360)
+        time.sleep(360)
+ 
+def check_eks_cluster(eks_name, region,key_vault):
+    try:
 
-    file_name = "./user_name.json"
+        key_vault_url_aws = f"https://{key_vault}.vault.azure.net/"
+        access_key_secret = "Access-key"
+        secret_access_key_secret = "secret-Access-key"
 
-    with open(file_name, 'r') as file:
-        user_data = json.load(file)
-  
-    user = Data(username=user_data["user"], cloudname='aws', clustername=eks_name)
-    db.session.add(user)
-    db.session.commit()
-    file_name = f'terraform-{user_data["user"]}.tfvars'
-    file_path = f'aws/templates/{file_name}'
-    new_username_record = UsernameTableaws(username={user_data["user"]})
-    db.session.add(new_username_record)
-    db.session.commit()
-    tf_config = f'''
-cluster_name = "{eks_name}"
-region = "{Region}"
-instance_type = "{instance_type}"
-eks_version = "{eks_version}"
-desired_size = "{desired_size}"
-max_size = "{max_size}"
-min_size = "{min_size}"
-cluster_type = "{cluster_type}"
-'''
-    print("Configuration:", tf_config)
+        # Retrieve credentials from Azure Key Vault
+        credential_aws = DefaultAzureCredential()
+        secret_client_aws = SecretClient(vault_url=key_vault_url_aws, credential=credential_aws)
 
-    # print("Configuration:", tf_config)
+        # Retrieve the secrets from Key Vault
+        aws_access_key = secret_client_aws.get_secret(access_key_secret).value
+        aws_secret_access_key = secret_client_aws.get_secret(secret_access_key_secret).value
+
+        # Initialize the Boto3 EKS client with retrieved AWS credentials
+        eks_client = boto3.client('eks', region_name=region, aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_access_key)
+
+        # Describe the EKS cluster
+        response = eks_client.describe_cluster(name=eks_name)
+
+        # If the cluster is found, return True
+        return True
 
     
-    print("Uploading tf file to gitlab")
-    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    print("Tf File uploaded successfully")
-    # You can also redirect the user to a success page if needed
-    session['info'] = 'Some information'
 
-    return redirect(url_for('jobs_aws'))
+    except botocore.exceptions.ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code")
+        if error_code == "ResourceNotFoundException":
+            # If the cluster is not found, return False
+            return False
+        else:
+            # Handle other exceptions if needed
+            print(f"Error: {e}")
+            return False
  
+def store_eks_cluster_info(account, cloudname,region, eks_name):
+    cluster_info = eks_cluster(
+        username=account,
+        cloudname=cloudname,
+        region=region,
+        eks_name=eks_name
+    )
+    db.session.add(cluster_info)
+    db.session.commit()
 #azure form
 @app.route('/azure')
 def azure():
@@ -2775,7 +2714,7 @@ def get_account(username,cloud_name):
         cursor.close()
         connection.close()
         return name
-def delete_account(account_name):
+def delete_account(account_name,cloud):
         db_config = {
         'host': '20.207.117.166',
         'port': 3306,
@@ -2785,10 +2724,10 @@ def delete_account(account_name):
         }
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        query = "DELETE FROM user_account WHERE account_name = %s;"
+        query = "DELETE FROM user_account WHERE account_name = %s and cloud_name = %s"
         
         # Execute the query with the provided parameter
-        cursor.execute(query, (account_name,))
+        cursor.execute(query, (account_name,cloud,))
 
         # Commit the changes to the database
         connection.commit()
@@ -2844,7 +2783,7 @@ def delete_azure_credential():
     resource_group = "Cockpit"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
     delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
-    delete_account(Account_name)
+    delete_account(Account_name,'azure')
     return render_template('final-dashboard.html')
 @app.route('/json_delete_azure_credential', methods=['POST'])
 def json_delete_azure_credential():
@@ -2861,7 +2800,7 @@ def json_delete_azure_credential():
             return jsonify(error_msg), 404
         
         delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
-        delete_account(Account_name)
+        delete_account(Account_name,'azure')
         return json.dumps({
             "message": 'Credential delete successfully',
             "statusCode": 200

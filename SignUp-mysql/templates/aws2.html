@@ -89,11 +89,17 @@
 </head>
 <body>
     <div class="container">
+        <h1>account names:</h1>
+        <ul>
+            {% for cluster in accounts %}
+                <li>{{ cluster }}</li>
+            {% endfor %}
+        </ul>
         <h2 class="heading-margin">Provide AWS Credentials</h2>
         <form id="k8sForm" action="/delete_aws_credential" method="post" onsubmit="return validateForm()">
             <div class="form-group">
-                <label for="User_name">User_name:</label>
-                <input type="text" class="form-control"  name="User_name" required>
+                <label for="account_name">Account name:</label>
+                <input type="text" class="form-control"  name="account_name" required>
             </div>
         
             <button type="submit" class="btn btn-custom-light-blue">Submit</button>

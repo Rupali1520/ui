@@ -21,6 +21,24 @@
             <button onclick="showContent('myCluster')">Cost Optimisation</button>
         </div>
         <div class="aws-credentials">
+            <h1>account names:</h1>
+        <ul>
+            {% for cluster in accounts %}
+                <li>{{ cluster }}</li>
+            {% endfor %}
+        </ul>
+        <form id="azureform" action="/get_credential_aws" method="post" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="account_name">Account name:</label>
+                <input type="text" class="form-control"  name="account_name" required>
+            </div>
+            
+       
+    
+            <button type="submit" class="btn btn-custom-light-blue">Submit</button>
+
+        </form>
+        <h1>{{ message }}</h1>
             <h1>Credential</h1>
             <p>Access Key: {{ access_key }}</p>
             <p>Secret Access Key: {{ secret_access_key }}</p>

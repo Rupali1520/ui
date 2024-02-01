@@ -125,8 +125,12 @@ input:checked + .slider:before {
     <h2>Create EKS Cluster</h2>
     <form id="awsForm" action="/create_aws" method="post" onsubmit="return checkforvaldation()">
         <div class="form-group">
+            <label for="account_name" style="color: aliceblue;">account_name:</label>
+            <input type="text" class="form-control" id="account_name" name="account_name" required>
+        </div>
+        <div class="form-group">
             <label for="eks_name" style="color: aliceblue;">EKS Name:</label>
-            <input type="text" class="form-control" id="cluster_name" name="eks_name" required>
+            <input type="text" class="form-control" id="eks_name" name="eks_name" required>
         </div>
 
         <div class="form-group">

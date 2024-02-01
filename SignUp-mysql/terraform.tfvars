@@ -1,0 +1,8 @@
+eks_name = "abc"
+Region = "US East (N. Virginia)"
+instance_type = "t2.micro"
+eks_version = "1.23"
+desired_size = "2"
+max_size = "3"
+min_size = "1"
+cluster_type = "Public"

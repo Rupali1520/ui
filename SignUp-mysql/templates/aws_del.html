@@ -45,7 +45,10 @@
     <div class="container">
     <h2>Delete EKS Cluster</h2>
     <form id="eksForm" action="/delete_eks" method="post" onsubmit="return checkforvaldation()">
-    
+        <div class="form-group">
+            <label for="account_name" style="color: aliceblue;">account_name:</label>
+            <input type="text" class="form-control" id="account_name" name="account_name" required>
+        </div>
         <div class="form-group">
             <label for="eks_name" style="color: aliceblue;">EKS Name:</label>
             <input type="text" class="form-control" id="eks_name" name="eks_name" required>
