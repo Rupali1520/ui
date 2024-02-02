@@ -489,7 +489,7 @@ def jobs_aws_delete():
 def json_jobs_aws_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'delete_aws_infrastructure'
+    job_name = 'delete-aws-infrastructure'
  
     db_config = {
         'host': '20.207.117.166',
@@ -654,7 +654,7 @@ def json_jobs_azure():
 @app.route('/jobs_azure_delete', methods=['GET'])
 def jobs_azure_delete():
         username = current_user.username 
-        job_name = 'azure_delete_infrastructure'
+        job_name = 'azure-delete-infrastructure'
 
         db_config = {
             'host': '20.207.117.166',
@@ -703,7 +703,7 @@ def jobs_azure_delete():
 def json_jobs_azure_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'azure_delete_infrastructure'
+    job_name = 'delete-azure-infrastructure'
 
     db_config = {
         'host': '20.207.117.166',
@@ -1341,7 +1341,7 @@ def json_my_cluster_details_aws():
 
         # Check if there are no AKS clusters available
         if not eks_names:
-            return jsonify({"message": "No EKS clusters available for the given user."}), 200
+            return jsonify({"message": "No EKS clusters available for the given account."}), 200
 
         # Return JSON response with AKS cluster names
         return jsonify({"eks_cluster": eks_names}), 200
@@ -1475,7 +1475,7 @@ def json_my_cluster_details_azure():
 
         # Check if there are no AKS clusters available
         if not aks_names:
-            return jsonify({"message": "No AKS clusters available for the given user."}), 200
+            return jsonify({"message": "No AKS clusters available for the given account."}), 200
 
         # Return JSON response with AKS cluster names
         return jsonify({"aks_cluster": aks_names}), 200
@@ -2378,24 +2378,39 @@ def delete_eks():
     db.session.add(new_username_record)
     db.session.commit()
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    check_and_delete_eks('us-east-1',eks_name,key_vault)
+    check_and_delete_eks('us-east-1', eks_name, key_vault, account_name)
     print("Tf File uploaded successfully")
     return render_template('success.html')
-def check_and_delete_eks(region, eks_name, key_vault):
+def delete_ekscluster(account_name,eks_name):
+        
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = "DELETE FROM eks_cluster WHERE username = %s and eks_name = %s"
+        
+        # Execute the query with the provided parameter
+        cursor.execute(query, (account_name,eks_name,))
+
+        # Commit the changes to the database
+        connection.commit()
+        return
+def check_and_delete_eks(region, eks_name, key_vault, account_name):
     
     while True:
         print("not")
         key_vault_url = f"https://{key_vault}.vault.azure.net/"
         eks_status = get_eks_cluster_status_with_keyvault(eks_name, region, 'Access-key','secret-Access-key',key_vault_url)
         if not eks_status:
-            cluster_info = eks_cluster.query.filter_by(eks_name=eks_name, region="us-east-1").one_or_none()
-            if cluster_info:   
-              print("yes")          # If the row exists, delete it            
-              db.session.delete(cluster_info)             
-              db.session.commit()
-              break
+               delete_ekscluster(account_name,eks_name)
+               break
         print("time")
-        time.sleep(360)
+        time.sleep(120)
         
 def get_eks_cluster_status_with_keyvault(eks_name, region, access_key_secret, secret_access_key_secret,key_vault_url):
     try:
@@ -2462,12 +2477,12 @@ def json_delete_eks():
         db.session.add(new_username_record)
         db.session.commit()
         upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-        check_and_delete_eks('us-east-1',eks_name,key_vault)
+        check_and_delete_eks('us-east-1',eks_name,key_vault,account_name)
         print("Tf File uploaded successfully")
       
 
         # Return JSON response
-        response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline please wait sometime...'}
+        response_data = {'status': 'success', 'message': 'cluster is deleting......'}
         return jsonify(response_data),202
 
     except Exception as e:
@@ -2609,14 +2624,15 @@ def check_and_store_eks_cluster_status(account, eks_name, Region,key_vault):
         # Check the AKS cluster status (replace this with your actual implementation)
         aks_cluster_created = check_eks_cluster(eks_name,'us-east-1',key_vault)
  
-        if aks_cluster_created:
+        if not aks_cluster_created:
+            time.sleep(120)
             # Store AKS cluster information in the database
             store_eks_cluster_info(account, 'aws', 'us-east-1', eks_name)
             break  # Break the loop once the AKS cluster is created
  
-        # Add a sleep interval to avoid continuous checking and reduce resource usage
-        time.sleep(360)
-        time.sleep(360)
+        print("not created")        
+# Add a sleep interval to avoid continuous checking and reduce resource usage
+        time.sleep(120)
  
 def check_eks_cluster(eks_name, region,key_vault):
     try:
