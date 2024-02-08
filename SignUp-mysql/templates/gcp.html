@@ -68,10 +68,14 @@
 <body>
     <div class="container" >
         <h2 class="heading-margin">Provide GCP Credentials in JSON file format</h2>
-        <form id="gkeForm" action="/submit_form_gke" method="post" enctype="multipart/form-data">
+        <form id="gkeForm" action="/submit_form_gcp" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="User_name">User_name:</label>
                 <input type="text" class="form-control"  name="User_name" required>
+            </div>
+            <div class="form-group">
+                <label for="account_name">account_name:</label>
+                <input type="text" class="form-control"  name="account_name" required>
             </div>
             <label for="jsonFile">Upload a JSON File: </label>
             <input type="file" id="jsonFile" name="jsonFile" accept=".json" required><br><br>

@@ -123,13 +123,16 @@ input:checked + .slider:before {
 
 <div class="container">
     <h2>Create GKE Cluster</h2>
-    <form id="gkeForm" action="/create_gke" method="post" onsubmit="return checkforvaldation()">
+    <form id="gkeForm" action="/submit_form_gke" method="post" onsubmit="return checkforvaldation()">
 
         <div class="form-group">
             <label for="project" style="color: aliceblue;">Project:</label>
             <input type="text" class="form-control" id="project" name="project" required>
         </div>
-
+        <div class="form-group">
+            <label for="account_name" style="color: aliceblue;">account_name:</label>
+            <input type="text" class="form-control" id="account_name" name="account_name" required>
+        </div>
         <div class="form-group">
             <label for="gke_name" style="color: aliceblue;">GKE Name:</label>
             <input type="text" class="form-control" id="gke_name" name="gke_name" required>

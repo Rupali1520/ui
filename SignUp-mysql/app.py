@@ -22,8 +22,8 @@ from googleapiclient import discovery
 from google.oauth2 import service_account
 import mysql.connector
 import pytz
-from azure.identity import DefaultAzureCredential
 from azure.mgmt.keyvault import KeyVaultManagementClient
+
 from azure.mgmt.resource import ResourceManagementClient
 from azure.core.exceptions import HttpResponseError
 import time
@@ -35,7 +35,6 @@ from azure.mgmt.containerservice import ContainerServiceClient
 from upload_tf_file import upload_file_to_gitlab
 import json
 from azure.identity import ClientSecretCredential
-from azure.keyvault.secrets import SecretClient
 from azure.mgmt.keyvault import KeyVaultManagementClient
 from flask import Flask, jsonify
 import hcl
@@ -105,6 +104,8 @@ class aks_cluster(db.Model):
     resource_group = db.Column(db.String(255), nullable=False)
     region = db.Column(db.String(255), nullable=False)
     aks_name = db.Column(db.String(255), nullable=False)
+    def __repr__(self):
+        return f"aks_cluster('{self.username}')"
 class eks_cluster(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
@@ -112,7 +113,15 @@ class eks_cluster(db.Model):
     region = db.Column(db.String(255), nullable=False)
     eks_name = db.Column(db.String(255), nullable=False)
     def __repr__(self):
-        return f"aks_cluster('{self.username}')"
+        return f"eks_cluster('{self.username}')"
+class gke_cluster(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False)
+    cloudname = db.Column(db.String(255), nullable=False)
+    region = db.Column(db.String(255), nullable=False)
+    eks_name = db.Column(db.String(255), nullable=False)
+    def __repr__(self):
+        return f"gke_cluster('{self.username}')"
 class Data(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False)
@@ -489,7 +498,7 @@ def jobs_aws_delete():
 def json_jobs_aws_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'delete-aws-infrastructure'
+    job_name = 'delete_aws_infrastructure'
  
     db_config = {
         'host': '20.207.117.166',
@@ -654,7 +663,7 @@ def json_jobs_azure():
 @app.route('/jobs_azure_delete', methods=['GET'])
 def jobs_azure_delete():
         username = current_user.username 
-        job_name = 'azure-delete-infrastructure'
+        job_name = 'azure_delete_infrastructure'
 
         db_config = {
             'host': '20.207.117.166',
@@ -703,7 +712,7 @@ def jobs_azure_delete():
 def json_jobs_azure_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'delete-azure-infrastructure'
+    job_name = 'azure_delete_infrastructure'
 
     db_config = {
         'host': '20.207.117.166',
@@ -1241,63 +1250,49 @@ def json_show_details_azure():
 def show_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
-        name = username+"gcp"
-        key_vault_name = f"https://{name}.vault.azure.net/"
-        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
-
-        if not key_vault_exists:
-            return render_template('show-details-gcp.html', secret_value="credential not found", username=username)
-            # Handle the case when the Key Vault doesn't exist
-            # error_msg = {"message": "Credential not found."}
-            # return jsonify(error_msg), 200
-    # Use DefaultAzureCredential to automatically authenticate
-        credential = DefaultAzureCredential()
-        
-        # Create a SecretClient using the Key Vault URL
-        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
-
-        # Retrieve the secrets
-        secret_name = "your-secret-name"
-        secret = secret_client.get_secret(secret_name)
-        secret_value = secret.value
-
-        return render_template('show-details-gcp.html', secret_value=secret_value, username=username)
+        accounts = get_account(username,'gcp')
+        return render_template('show-details-gcp.html', username=username,accounts=accounts)
         
     else:
         return redirect(url_for('login'))
+@app.route('/get_credential_gcp', methods=['GET', 'POST'])
+def get_credential_gcp():
+    if current_user.is_authenticated:
+        username = current_user.username
+        account_name = request.form.get('account_name')
+        accounts = get_account(username,'gcp')
+        key_vault_name = account_name+"gcp"
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            return render_template('show-details-gcp.html', message="credential not found",username=username,accounts=accounts)
+        # Use DefaultAzureCredential to automatically authenticate
+        #credential = DefaultAzureCredential()
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        secret_name = "your-secret-name"
+        secret = secret_client.get_secret(secret_name)
+        secret_value = secret.value
+        return render_template('show-details-gcp.html', username=username,accounts=accounts,secret_value=secret_value)
+        
+    else:
+        return redirect(url_for('login'))
+
 @app.route('/json-show-details-gcp', methods=['POST'])
 def json_show_details_gcp():
     try:
         form_data = request.get_json()
         username = form_data['username']
-        key_vault_name = username + "gcp"
-        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+        accounts = get_account(username,'gcp')
+        return jsonify(accounts), 200
 
-        if not key_vault_exists:
-            # Handle the case when the Key Vault doesn't exist
-            error_msg = {"message": "Credential not found."}
-            return jsonify(error_msg), 200
-
-        # Key Vault exists, proceed with retrieving secrets
-        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
-        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
-        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
-
-        # Retrieve the secrets
-        secret_name = "your-secret-name"
-        secret = secret_client.get_secret(secret_name)
-        secret_value = secret.value
-
-        # Return JSON response
-        response_data = {
-            "username": username,
-            "secret_value": secret_value
-        }
-
-        return jsonify(response_data), 200
     except ResourceNotFoundError:
         # Handle the case when a specific secret doesn't exist
-        error_msg = {"message": "Credentials not found."}
+        error_msg = {"message": "accounts are not avilable."}
         return jsonify(error_msg), 200
 
     except HttpResponseError as e:
@@ -1308,8 +1303,49 @@ def json_show_details_gcp():
     except Exception as e:
         # Handle other exceptions
         error_msg = {"error_message": f"An error occurred: {str(e)}"}
-        return jsonify(error_msg), 500        
-        
+        return jsonify(error_msg), 500
+@app.route('/json_get_credential_gcp', methods=['GET', 'POST'])
+def json_get_credential_gcp():
+    try:
+        form_data = request.get_json()
+        account_name = form_data['account_name']
+       
+        key_vault_name = account_name+"gcp"
+        key_vault_url = f"https://{key_vault_name}.vault.azure.net/"
+        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+
+        if not key_vault_exists:
+            # Handle the case when the Key Vault doesn't exist
+            error_msg = {"message": "Credential not found."}
+            return jsonify(error_msg), 200
+        credential = DefaultAzureCredential(additionally_allowed_tenants=["*"])
+        # Create a SecretClient using the Key Vault URL
+        secret_client = SecretClient(vault_url=key_vault_url, credential=credential)
+
+        # Retrieve the secret containing your Azure credentials
+        secret_name = "your-secret-name"
+        secret = secret_client.get_secret(secret_name)
+        secret_value = secret.value
+        response_data = {
+            "secret_value": secret_value
+        }
+        return jsonify(response_data), 200
+
+    except ResourceNotFoundError:
+        # Handle the case when a specific secret doesn't exist
+        error_msg = {"message": "accounts are not avilable."}
+        return jsonify(error_msg), 200
+
+    except HttpResponseError as e:
+        # Handle other HTTP response errors
+        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
+        return jsonify(error_msg), 500
+
+    except Exception as e:
+        # Handle other exceptions
+        error_msg = {"error_message": f"An error occurred: {str(e)}"}
+        return jsonify(error_msg), 500
+
 
 @app.route('/create-cluster', methods=['GET', 'POST'])
 def create_cluster():
@@ -1341,7 +1377,7 @@ def json_my_cluster_details_aws():
 
         # Check if there are no AKS clusters available
         if not eks_names:
-            return jsonify({"message": "No EKS clusters available for the given account."}), 200
+            return jsonify({"message": "No EKS clusters available for the given user."}), 200
 
         # Return JSON response with AKS cluster names
         return jsonify({"eks_cluster": eks_names}), 200
@@ -1360,11 +1396,7 @@ def my_cluster_details():
 
 
 
-        # Print healthy or ready AKS clusters
-        # print("Healthy Azure Kubernetes Service Clusters:")
-        # for aks_cluster in aks_clusters:
-        #     if aks_cluster.provisioning_state.lower() == "succeeded" and aks_cluster.agent_pool_profiles[0].provisioning_state.lower() == "succeeded":
-        #         print(f" - {aks_cluster.name}")
+        
 @app.route('/get_azure_cluster', methods=['GET', 'POST'])
 def get_azure_cluster():
     if current_user.is_authenticated:
@@ -1435,6 +1467,7 @@ def get_cluster_aws(account_name):
         cursor.close()
         connection.close()
         return name
+
 @app.route('/my-cluster-details-azure', methods=['GET', 'POST'])
 def my_cluster_details_azure():
     if current_user.is_authenticated:
@@ -1475,7 +1508,7 @@ def json_my_cluster_details_azure():
 
         # Check if there are no AKS clusters available
         if not aks_names:
-            return jsonify({"message": "No AKS clusters available for the given account."}), 200
+            return jsonify({"message": "No AKS clusters available for the given user."}), 200
 
         # Return JSON response with AKS cluster names
         return jsonify({"aks_cluster": aks_names}), 200
@@ -1486,92 +1519,74 @@ def json_my_cluster_details_azure():
         return jsonify({"error_message": "An error occurred while fetching AKS cluster details."}), 500
 @app.route('/json-my-cluster-details-gcp', methods=['POST'])
 def json_my_cluster_details_gcp():
-    # if current_user.is_authenticated:
-      
-        form = request.get_json()
-        username = form['username']
-        name = username + "gcp"
+    form = request.get_json()
+    account = form['account_name']
 
-            # Azure Key Vault details for GCP
-        key_vault_url_gcp = f"https://{name}.vault.azure.net/"
-        gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
-        try:
-            # Retrieve credentials from Azure Key Vault
-                credential_gcp = DefaultAzureCredential()
-                secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
+    try:
+        # Query the database to get AKS cluster names for the given username
+        gke_names = get_cluster_gcp(account)
 
-                    # Retrieve the GCP credentials JSON from Key Vault
-                gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
+        # Check if there are no AKS clusters available
+        if not gke_names:
+            return jsonify({"message": "No GKE clusters available for the given user."}), 200
 
-                    # Parse the JSON string into a dictionary
-                gcp_credentials_dict = json.loads(gcp_credentials_json)
+        # Return JSON response with AKS cluster names
+        return jsonify({"gke_cluster": gke_names}), 200
 
-                    # Use the parsed dictionary to create a service account credentials object
-                gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
-                # except Exception as e:
-                #     print(f"Error retrieving or parsing GCP credentials: {e}")
-                    # Use the service account credentials for the discovery build
-                service = discovery.build('container', 'v1', credentials=gcp_credentials)
-                gcp_projects = ['golden-plateau-401906']
-
-                    # List to store GKE clusters data
-                clusters_data = []
-
-                for project in gcp_projects:
-                    requests = service.projects().locations().clusters().list(parent=f"projects/{project}/locations/-")
-                    response = requests.execute()
-
-                    if 'clusters' in response:
-                        for cluster in response['clusters']:
-                            clusters_data.append({cluster['name']})
-
-                    # Return JSON response
-                return jsonify({"username": username, "clusters_data": clusters_data}), 200
-        except Exception as e:
-            print(f"Error: {str(e)}")
-            return jsonify({"error_message": "cluster not found"}),200
+    except Exception as e:
+        # Handle other exceptions (e.g., database connection error)
+        print(f"Error: {str(e)}")
+        return jsonify({"error_message": "An error occurred while fetching GKE cluster details."}), 500
 
 
 @app.route('/my-cluster-details-gcp', methods=['GET', 'POST'])
 def my_cluster_details_gcp():
     if current_user.is_authenticated:
         username = current_user.username
-        name = username +"gcp"
-        # Azure Key Vault details for GCP
-        key_vault_url_gcp = f"https://{name}.vault.azure.net/"
-        gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
+        accounts = get_account(username,'gcp')
+    
+            
 
-        # Retrieve credentials from Azure Key Vault
-        credential_gcp = DefaultAzureCredential()
-        secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
+        return render_template('my-cluster-details-gcp.html', username=username,accounts=accounts)
 
-        # Retrieve the GCP credentials JSON from Key Vault
-        gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
-
-            # Parse the JSON string into a dictionary
-        gcp_credentials_dict = json.loads(gcp_credentials_json)
-
-            # Use the parsed dictionary to create a service account credentials object
-        gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
-        
-
-        # Use the service account credentials for the discovery build
-        service = discovery.build('container', 'v1', credentials=gcp_credentials)
-        gcp_projects = ['golden-plateau-401906']
-
-        # List to store GKE clusters data
-        clusters_data = []
-
-        for project in gcp_projects:
-            request = service.projects().locations().clusters().list(parent=f"projects/{project}/locations/-")
-            response = request.execute()
-
-            if 'clusters' in response:
-                for cluster in response['clusters']:
-                    clusters_data.append({cluster['name']})
-        return render_template('my-cluster-details-gcp.html', username=username, clusters_data=clusters_data)
     else:
         return redirect(url_for('login'))
+def get_cluster_gcp(account_name):
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+    
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = f"SELECT distinct eks_name FROM gke_cluster WHERE username = '{account_name}'"
+        cursor.execute(query)
+        name = [result[0] for result in cursor.fetchall()]
+        cursor.close()
+        connection.close()
+        return name
+@app.route('/get_gcp_cluster', methods=['GET', 'POST'])
+def get_gcp_cluster():
+    if current_user.is_authenticated:
+        username = current_user.username
+        account = request.form.get('account_name')
+       
+
+        try:
+            # Retrieve credentials from Azure Key Vault
+            aks_names = get_cluster_gcp(account)
+
+            return render_template('my-cluster-details-gcp.html', username=username,clusters=aks_names)
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            # Handle the exception appropriately, e.g., return an error page
+            return render_template('error.html', error_message=str(e))
+    else:
+        return redirect(url_for('login'))
+
 
 @app.route('/cluster-creation-status', methods=['GET', 'POST'])
 def cluster_creation_status():
@@ -2276,8 +2291,12 @@ def json_delete_aks():
 @app.route('/delete_gke', methods=['POST'])
 def delete_gke():
     gke_name = request.form.get('gke_name')
+    account_name = request.form.get('account_name')
     region = request.form.get('region')
     projecct_id = request.form.get('project_id')
+    new_username_record = UsernameTablegcp(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
     gl.auth()
     project = gl.projects.get(project_id)
@@ -2297,24 +2316,100 @@ def delete_gke():
     region = "{region}"
     project_id = "{projecct_id}"
     '''
-    file_content_normalized = file_content.strip().replace('\r\n', '\n')
-    tf_config_normalized = tf_config.strip().replace('\r\n', '\n')
-    if file_content_normalized == tf_config_normalized:
-        print("same contant")
-        return render_template('gcp_del.html')
-    else:
-        print("Uploading tf file to gitlab")
-        upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-        print("Tf File uploaded successfully")
-        return render_template('success.html')
+    print("Uploading tf file to gitlab")
+    upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
+    print("Tf File uploaded successfully")
+    check_and_delete_gke_cluster_status(account_name,"us-central1-f",gke_name,project)
+    return render_template('success.html')
+def check_and_delete_gke_cluster_status(account_name,region,gke_name,project):
+    while True:
+        # Check the AKS cluster status (replace this with your actual implementation)
+        eks_cluster_created = check_gke_cluster_deletion_status(account_name,gke_name,region,project)
+ 
+        if not eks_cluster_created:
+            # Store AKS cluster information in the database
+            delete_gke(account_name,gke_name)
+            break  # Break the loop once the AKS cluster is created
+ 
+        # Add a sleep interval to avoid continuous checking and reduce resource usage
+        time.sleep(60)
+ 
+def check_gke_cluster_deletion_status(account_name,gke_name,region,project):
+    key_vault_url_gcp = f"https://{account_name}gcp.vault.azure.net/"
+    gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
+
+    try:
+        print(gke_name)
+        print(region)
+        print(project)
+        # Retrieve credentials from Azure Key Vault
+        credential_gcp = DefaultAzureCredential()
+        secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
+        print("_____")
+        # Retrieve the GCP credentials JSON from Key Vault
+        gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
+        print("gcp_credentials_json")
+        # Parse the JSON string into a dictionary
+        gcp_credentials_dict = json.loads(gcp_credentials_json)
+        print(gcp_credentials_dict)
+        # Use the parsed dictionary to create a service account credentials object
+        gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
+
+        # Use the service account credentials for the discovery build
+        client = container_v1.ClusterManagerClient(credentials=gcp_credentials)
+
+        # Define the parent (project) and cluster ID
+        project_id = project  # Update with your GCP project ID
+        cluster_id = gke_name  # Ensure this matches the actual cluster name
+        location = region # Update if your cluster is in a different location
+        print(gke_name)
+        print(location)
+        print(project_id)
+        # Construct the cluster resource name
+        cluster_path = f"projects/{project_id}/locations/{location}/clusters/{cluster_id}"
+
+        # Attempt to get information about the cluster
+        cluster = client.get_cluster(name=cluster_path)
+
+        if cluster:
+            print("The GKE cluster exists.")
+            return True
+        
+    except Exception as e:
+        # Print the error message if an exception occurs
+        print("An error occurred:", e)
+        print("The GKE cluster does not exist or there was an error.")
+        return False
+def delete_gke(account_name,gke_name):
+        db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+        }
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+        query = "DELETE FROM gke_cluster WHERE username = %s and eks_name = %s"
+        
+        # Execute the query with the provided parameter
+        cursor.execute(query, (account_name,gke_name,))
+
+        # Commit the changes to the database
+        connection.commit()
+        return
 
 @app.route('/json_delete_gke', methods=['POST'])
 def json_delete_gke():
   try:
-    gke_name = request.form.get('gke_name')
-    region = request.form.get('region')
-    project_id = request.form.get('project_id')
-
+    form = request.get_json()
+    account_name = form['account_name']
+    gke_name = form['gke_name']
+    region = form['region']
+    project = form['project_id']
+    new_username_record = UsernameTablegcp(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     with open('file.txt', 'w') as f:
         f.write(f'gke-name = "{gke_name}"\n')
         f.write(f'region = "{region}"\n')
@@ -2324,13 +2419,15 @@ def json_delete_gke():
     tf_config = f''' 
     gke_name = "{gke_name}"
     region = "{region}"
-    project_id = "{project_id}"
+    project_id = "{project}"
     '''
     print("Configuration:", tf_config)
     print("Uploading tf file to gitlab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tf File uploaded successfully")
-    response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline please wait sometime...'}
+    print("Tf File uploaded successfully")
+    check_and_delete_gke_cluster_status(account_name,"us-central1-f",gke_name,project)
+    response_data = {'status': 'success', 'message': 'Cluster is deleted'}
     return jsonify(response_data),202
 
   except Exception as e:
@@ -2378,11 +2475,10 @@ def delete_eks():
     db.session.add(new_username_record)
     db.session.commit()
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-    check_and_delete_eks('us-east-1', eks_name, key_vault, account_name)
+    check_and_delete_eks('us-east-1',eks_name,key_vault)
     print("Tf File uploaded successfully")
     return render_template('success.html')
-def delete_ekscluster(account_name,eks_name):
-        
+def delete_eks(account_name,cloud):
         db_config = {
         'host': '20.207.117.166',
         'port': 3306,
@@ -2392,25 +2488,29 @@ def delete_ekscluster(account_name,eks_name):
         }
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
-        query = "DELETE FROM eks_cluster WHERE username = %s and eks_name = %s"
+        query = "DELETE FROM user_account WHERE account_name = %s and cloud_name = %s"
         
         # Execute the query with the provided parameter
-        cursor.execute(query, (account_name,eks_name,))
+        cursor.execute(query, (account_name,cloud,))
 
         # Commit the changes to the database
         connection.commit()
         return
-def check_and_delete_eks(region, eks_name, key_vault, account_name):
+def check_and_delete_eks(region, eks_name, key_vault):
     
     while True:
         print("not")
         key_vault_url = f"https://{key_vault}.vault.azure.net/"
         eks_status = get_eks_cluster_status_with_keyvault(eks_name, region, 'Access-key','secret-Access-key',key_vault_url)
         if not eks_status:
-               delete_ekscluster(account_name,eks_name)
-               break
+            cluster_info = eks_cluster.query.filter_by(eks_name=eks_name, region="us-east-1").one_or_none()
+            if cluster_info:   
+              print("yes")          # If the row exists, delete it            
+              db.session.delete(cluster_info)             
+              db.session.commit()
+              break
         print("time")
-        time.sleep(120)
+        time.sleep(360)
         
 def get_eks_cluster_status_with_keyvault(eks_name, region, access_key_secret, secret_access_key_secret,key_vault_url):
     try:
@@ -2477,12 +2577,12 @@ def json_delete_eks():
         db.session.add(new_username_record)
         db.session.commit()
         upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
-        check_and_delete_eks('us-east-1',eks_name,key_vault,account_name)
+        check_and_delete_eks('us-east-1',eks_name,key_vault)
         print("Tf File uploaded successfully")
       
 
         # Return JSON response
-        response_data = {'status': 'success', 'message': 'cluster is deleting......'}
+        response_data = {'status': 'success', 'message': 'Delete request triggered the pipeline please wait sometime...'}
         return jsonify(response_data),202
 
     except Exception as e:
@@ -2624,15 +2724,14 @@ def check_and_store_eks_cluster_status(account, eks_name, Region,key_vault):
         # Check the AKS cluster status (replace this with your actual implementation)
         aks_cluster_created = check_eks_cluster(eks_name,'us-east-1',key_vault)
  
-        if not aks_cluster_created:
-            time.sleep(120)
+        if aks_cluster_created:
             # Store AKS cluster information in the database
             store_eks_cluster_info(account, 'aws', 'us-east-1', eks_name)
             break  # Break the loop once the AKS cluster is created
  
-        print("not created")        
-# Add a sleep interval to avoid continuous checking and reduce resource usage
-        time.sleep(120)
+        # Add a sleep interval to avoid continuous checking and reduce resource usage
+        time.sleep(360)
+        time.sleep(360)
  
 def check_eks_cluster(eks_name, region,key_vault):
     try:
@@ -3288,24 +3387,21 @@ def json_update_credential_gcp():
         if not json_file.filename.endswith('.json'):
             return render_template('./submit.html')  
         file_content = json_file.read()
-        save_directory = './'
-        file_path = os.path.join(save_directory, json_file.filename)
-        json_file.save(file_path)
-        secrets_file_path = file_path
-        
-        with open(secrets_file_path, 'r') as json_file:
-            secrets_content = json_file.read()
+        secret_string = file_content.decode('utf-8')
         form = request.get_json()
-        
-        User_name = form['user_name']
-        key_vault_name = User_name+"gcp"
+        User_name = form['User_name']
+        account_name = form['account_name']
+
+        key_vault_name = account_name+"gcp"
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
         if not key_vault_exists:
                 # Handle the case when the Key Vault doesn't exist
             error_msg = {"message": "First Add Credential."}
             return jsonify(error_msg), 404
-        update_keyvault_secret(vault_url, "your-secret-name", secrets_content)
+        update_keyvault_secret(vault_url, "your-secret-name", secret_string)
+        update_keyvault_secret(vault_url, "username", User_name)
+        update_keyvault_secret(vault_url, "account-name", account_name)
         return json.dumps( {
                 "message": 'Credential Update successfully',
                 "statusCode": 200
@@ -3326,18 +3422,19 @@ def json_update_credential_gcp():
         return jsonify(error_msg), 500
 @app.route('/delete_credential_gcp', methods=['POST'])
 def delete_credential_gcp():
-    User_name = request.form.get('User_name')
-    key_vault_name = User_name
+    account_name = request.form.get('account_name')
+    key_vault_name = account_name+"gcp"
     resource_group = "Cockpit"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
     delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', resource_group, key_vault_name)
+    delete_account(account_name,'gcp')
     return render_template('final-dashboard.html')
 @app.route('/json_delete_credential_gcp', methods=['POST'])
 def json_delete_credential_gcp():
     try:
         form = request.get_json()
-        User_name = form['user_name']
-        key_vault_name = User_name+"gcp"
+        account_name = form['account_name']
+        key_vault_name = account_name+"gcp"
         vault_url = f"https://{key_vault_name}.vault.azure.net/"
         key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
         if not key_vault_exists:
@@ -3345,6 +3442,7 @@ def json_delete_credential_gcp():
             error_msg = {"message": "Invaild username."}
             return jsonify(error_msg), 404
         delete_keyvault(vault_url,'f1aed9cb-fcad-472f-b14a-b1a0223fa5a5', 'Cockpit', key_vault_name)
+        delete_account(account_name,'gcp')
         return json.dumps( {
                 "message": 'Credential delete successfully',
                 "statusCode": 200
@@ -3363,7 +3461,7 @@ def json_delete_credential_gcp():
         # Handle other exceptions
         error_msg = {"error_message": f"An error occurred: {str(e)}"}
         return jsonify(error_msg), 500
-@app.route('/update_credential_gcp', methods=['GET'])
+@app.route('/update_credential_gcp', methods=['POST'])
 def update_credential_gcp():  
     if 'jsonFile' not in request.files:
         return json.dumps( {
@@ -3375,32 +3473,29 @@ def update_credential_gcp():
     if not json_file.filename.endswith('.json'):
         return render_template('./submit.html')  
     file_content = json_file.read()
-    save_directory = './'
-    file_path = os.path.join(save_directory, json_file.filename)
-    json_file.save(file_path)
-    secrets_file_path = file_path
-    
-    with open(secrets_file_path, 'r') as json_file:
-        secrets_content = json_file.read()
- 
     User_name = request.form.get('User_name')
-    key_vault_name = User_name+"gcp"
+    account_name = request.form.get('account_name')
+    key_vault_name = account_name+"gcp"
     vault_url = f"https://{key_vault_name}.vault.azure.net/"
-    update_keyvault_secret(vault_url, "your-secret-name", secrets_content)
-
+    update_keyvault_secret(vault_url, "your-secret-name", file_content)
+    update_keyvault_secret(vault_url, "username", User_name)
+    update_keyvault_secret(vault_url, "account-name", account_name)
     return render_template('final-dashboard.html')
-@app.route('/submit_form_gke', methods=['GET'])
-def create_gcp():
+@app.route('/submit_form_gke', methods=['POST'])
+def submit_form_gke():
     # Retrieve form data
+    account_name = request.form.get('account_name')
     project = request.form.get('project')
-    Region = request.form.get('Region')
+    Region = request.form.get('region')
     gke_name = request.form.get('gke_name')
     gke_version = request.form.get('gke_version')
     node_count = request.form.get('node_count')
     cluster_type = request.form.get('cluster_type')
     gke_version = str(gke_version)
     gke_version = version.parse(gke_version)
- 
+    new_username_record = UsernameTablegcp(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     # Initialize variables for vm_name and vm_pass
     vm_name = None
     vm_pass = None
@@ -3422,23 +3517,20 @@ def create_gcp():
             f.write(f'vm_name = "{vm_name}"\n')
             f.write(f'vm_pass = "{vm_pass}"\n')
 
-    file_name = "./user_name.json"
+    # file_name = "./user_name.json"
 
-    with open(file_name, 'r') as file:
-        user_data = json.load(file)
-    user = Data(username=user_data["user"], cloudname='gcp', clustername=gke_name)
-    db.session.add(user)
-    db.session.commit()
-    file_name = f'terraform-{user_data["user"]}gcp.tfvars'
-    file_path = f'/gcp/templates/{file_name}'
-    new_username_record = UsernameTablegcp(username={user_data["user"]})
-    db.session.add(new_username_record)
-    db.session.commit()
+    # with open(file_name, 'r') as file:
+    #     user_data = json.load(file)
+    # user = Data(username=user_data["user"], cloudname='gcp', clustername=gke_name)
+    # db.session.add(user)
+    # db.session.commit()
+    file_name = f'terraform-{account_name}.tfvars'
+    file_path = f'gcp/template/{file_name}'
 
     tf_config = f'''
     project = "{project}"
     Region = "{Region}"
-    gke_name = "{gke_name}"
+    cluster_name = "{gke_name}"
     gke_version = "{gke_version}"
     node_count = "{node_count}"
     cluster_type = "{cluster_type}"
@@ -3456,14 +3548,83 @@ def create_gcp():
     print("Uploading tfvars file to GitLab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tfvars File uploaded successfully")
-
+    # time.sleep(360)
+    print("after 4 mins")
+    check_and_store_gke_cluster_status(account_name,"us-central1-f",gke_name,project)
     # You can also redirect the user to a success page if needed
     
     return render_template('success.html')
+def check_and_store_gke_cluster_status(account_name,region,gke_name,project):
+    while True:
+        # Check the AKS cluster status (replace this with your actual implementation)
+        eks_cluster_created = check_gke_cluster_creation_status(account_name,gke_name,region,project)
+ 
+        if eks_cluster_created:
+            # Store AKS cluster information in the database
+            store_gke_cluster_info(account_name, 'gcp', region, gke_name)
+            break  # Break the loop once the AKS cluster is created
+ 
+        # Add a sleep interval to avoid continuous checking and reduce resource usage
+        time.sleep(60)
+ 
+def check_gke_cluster_creation_status(account_name,gke_name,region,project):
+    key_vault_url_gcp = f"https://{account_name}gcp.vault.azure.net/"
+    gcp_credentials_secret = "your-secret-name"  # Update with your actual secret name
 
-@app.route('/submit_form_gke', methods=['POST'])
+    try:
+        print(gke_name)
+        print(region)
+        print(project)
+        # Retrieve credentials from Azure Key Vault
+        credential_gcp = DefaultAzureCredential()
+        secret_client_gcp = SecretClient(vault_url=key_vault_url_gcp, credential=credential_gcp)
+        print("_____")
+        # Retrieve the GCP credentials JSON from Key Vault
+        gcp_credentials_json = secret_client_gcp.get_secret(gcp_credentials_secret).value
+        print("gcp_credentials_json")
+        # Parse the JSON string into a dictionary
+        gcp_credentials_dict = json.loads(gcp_credentials_json)
+        print(gcp_credentials_dict)
+        # Use the parsed dictionary to create a service account credentials object
+        gcp_credentials = service_account.Credentials.from_service_account_info(gcp_credentials_dict)
+
+        # Use the service account credentials for the discovery build
+        client = container_v1.ClusterManagerClient(credentials=gcp_credentials)
+
+        # Define the parent (project) and cluster ID
+        project_id = project  # Update with your GCP project ID
+        cluster_id = gke_name  # Ensure this matches the actual cluster name
+        location = region # Update if your cluster is in a different location
+        print(gke_name)
+        print(location)
+        print(project_id)
+        # Construct the cluster resource name
+        cluster_path = f"projects/{project_id}/locations/{location}/clusters/{cluster_id}"
+
+        # Attempt to get information about the cluster
+        cluster = client.get_cluster(name=cluster_path)
+
+        if cluster:
+            print("The GKE cluster exists.")
+            return True
+        
+    except Exception as e:
+        # Print the error message if an exception occurs
+        print("An error occurred:", e)
+        print("The GKE cluster does not exist or there was an error.")
+        return False
+ 
+def store_gke_cluster_info(username, cloudname, region, gke_name):
+    cluster_info = gke_cluster(
+        username=username,
+        cloudname=cloudname,
+        region=region,
+        eks_name=gke_name
+    )
+    db.session.add(cluster_info)
+    db.session.commit()
+@app.route('/submit_form_gcp', methods=['POST'])
 def submit_form_gcp():
-    # Check if a file was uploaded
     if 'jsonFile' not in request.files:
         return json.dumps( {
             "message": 'failed to create key-vault'
@@ -3478,149 +3639,69 @@ def submit_form_gcp():
     # Check if the file is a JSON file
     if not json_file.filename.endswith('.json'):
         return render_template('./submit.html')
-    
     file_content = json_file.read()
-    # Specify the directory where you want to save the JSON file
-    save_directory = './'
- 
-    # Save the JSON file with its original filename
-    json_file.save(f"{save_directory}/{json_file.filename}")
- 
+    print(file_content)
+    secret_string = file_content.decode('utf-8')
+    # clean_secret_string = secret_string.replace('\n', '')
+    # secret_dict = json.loads(clean_secret_string)
+    # print(secret_dict)
     User_name = request.form.get('User_name')
-    User_Id = str(int(random.random()))
- 
-    # Azure Key Vault and Secrets Configuration
-    key_vault_name = User_name+"gcp"
- 
-    resource_group_name = "Cockpit"
-    location = "westus2"
-    secrets_file_path = json_file.filename
- 
-        # Create Azure Key Vault if it doesn't exist
-    create_kv_command = f"az keyvault create --name {key_vault_name} --resource-group {resource_group_name} --location {location}"
-    try:
-            subprocess.check_output(create_kv_command, shell=True)
-            print(f"Azure Key Vault '{key_vault_name}' created successfully in Resource Group '{resource_group_name}'.")
-    except subprocess.CalledProcessError:
-            print(f"Error: Failed to create Azure Key Vault.")
-            exit(1)
- 
-        # Authenticate to Azure
-    try:
-            # Use Azure CLI to get the access token
-            access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
-    except subprocess.CalledProcessError:
-            print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
-            exit(1)
- 
-        # Read the entire content of the JSON file
-    with open(secrets_file_path, 'r') as json_file:
-            secrets_content = json_file.read()
- 
- 
-        # Store the entire JSON content as a secret
-    secret_name = "your-secret"
-    # encoded_value = base64.b64encode(secrets_content.encode("utf-8")).decode("utf-8")     
-    # command = f"az keyvault secret set --vault-name {key_vault_name} --name {secret_name} --value '{encoded_value}' --output none --query 'value'"
-          # Replace with your desired secret name
-    command = f"az keyvault secret set --vault-name {key_vault_name} --name {secret_name} --value '{secrets_content}' --output none --query 'value'"
-    try:
-            # Use Azure CLI to set the secret in the Key Vault
-            subprocess.check_call(["bash", "-c", f'AZURE_ACCESS_TOKEN="{access_token}" {command}'])
-            print(f"Secret '{secret_name}' has been stored in Azure Key Vault.")
-    except subprocess.CalledProcessError as e:
-            print(f"Error: Failed to store secret '{secret_name}' in Azure Key Vault.")
-            print(e)
- 
-        
- 
-    print("Secret has been stored in Azure Key Vault.")
-    os.remove(secrets_file_path)    
- 
-    
-    return json.dumps( {
-            "message": 'Credential Succesfully added',
-            "statusCode": 200
-    })
-   # return render_template('create_gke.html')
+    account_name = request.form.get('account_name')
+    resource_group_name = "Cockpit"  
+    key_vault_name = account_name+"gcp"
+    new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='gcp')
+    db.session.add(new_user)
+    db.session.commit()
+    location = "eastus"  # Choose a valid Azure location without special characters
+    create_key_vault(key_vault_name,location,resource_group_name)
+    key_vault = f"https://{key_vault_name}.vault.azure.net/"
+    store_secrets(key_vault,"your-secret-name", secret_string)
+    store_secrets(key_vault,"username", User_name)
+    store_secrets(key_vault,"account-name", account_name)
 
-@app.route('/json_submit_form_gke', methods=['POST'])
+    return render_template('create_gke.html')
+
+@app.route('/json_submit_form_gcp', methods=['POST'])
 def json_submit_form_gcp():
-    # Check if a file was uploaded
     if 'jsonFile' not in request.files:
-        return jsonify({"message": 'No file part'}), 400
-
+        return json.dumps( {
+            "message": 'failed to create key-vault'
+        }),409
+ 
     json_file = request.files['jsonFile']
-
+ 
     # Check if the file has a filename
     if json_file.filename == '':
-        return jsonify({"message": 'No file selected'}), 400
-
+        return render_template('./file_submit.html')
+ 
     # Check if the file is a JSON file
-  #  if not json_file.filename.endswith('.json'):
-   #     return jsonify({"message": 'Invalid file type. Please upload a JSON file'}), 400
-
-    # Specify the directory where you want to save the JSON file
-    save_directory = './'
-
-    # Save the JSON file with its original filename
-    file_path = os.path.join(save_directory, json_file.filename)
-    json_file.save(file_path)
-
-    User_name = request.form.get('User_name')
-    User_Id = str(int(random.random()))
-
-    # Azure Key Vault and Secrets Configuration
-    key_vault_name = User_name+"gcp"
-    resource_group_name = "Cockpit"
-    location = "westus2"
-    secrets_file_path = file_path
-
-    # Create Azure Key Vault if it doesn't exist
-    create_kv_command = f"az keyvault create --name {key_vault_name} --resource-group {resource_group_name} --location {location}"
-    try:
-        subprocess.check_output(create_kv_command, shell=True)
-        print(f"Azure Key Vault '{key_vault_name}' created successfully in Resource Group '{resource_group_name}'.")
-    except subprocess.CalledProcessError:
-        print(f"Error: Failed to create Azure Key Vault.")
-        os.remove(file_path)  # Remove the uploaded file if creation of Key Vault fails
-        return jsonify({"message": 'Failed to create Azure Key Vault'}), 500
-
-    # Authenticate to Azure
-    try:
-        access_token = subprocess.check_output(["az", "account", "get-access-token", "--query", "accessToken", "-o", "tsv"]).decode("utf-8").strip()
-    except subprocess.CalledProcessError:
-        print("Error: Failed to obtain Azure access token. Make sure you are logged into Azure CLI.")
-        os.remove(file_path)  # Remove the uploaded file if access token retrieval fails
-        return jsonify({"message": 'Failed to obtain Azure access token'}), 500
-
-    # Read the entire content of the JSON file
-    with open(secrets_file_path, 'r') as json_file:
-        secrets_content = json_file.read()
-
-    # Store the entire JSON content as a secret
-    secret_name = "your-secret-name"
-    encoded_value = base64.b64encode(secrets_content.encode("utf-8")).decode("utf-8")
-    command = f"az keyvault secret set --vault-name {key_vault_name} --name {secret_name} --value {encoded_value} --output none --query 'value'"
-
-    try:
-        subprocess.check_call(["bash", "-c", f'AZURE_ACCESS_TOKEN="{access_token}" {command}'])
-        print(f"Secret '{secret_name}' has been stored in Azure Key Vault.")
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Failed to store secret '{secret_name}' in Azure Key Vault. {e}")
-        os.remove(file_path)  # Remove the uploaded file if storing secret fails
-        return jsonify({"message": 'Failed to store secret in Azure Key Vault'}), 500
-
-    print("Secret has been stored in Azure Key Vault.")
-    os.remove(file_path)  # Remove the uploaded file after processing
+    if not json_file.filename.endswith('.json'):
+        return render_template('./submit.html')
+    file_content = json_file.read()
+    secret_string = file_content.decode('utf-8')
+    form = request.get_json()
+    User_name = form['User_name']
+    account_name = form['account_name']
+    resource_group_name = "Cockpit"  
+    key_vault_name = account_name+"gcp"
+    created = create_key_vault(key_vault_name,location,resource_group_name)
+    if not created:
+                # Handle the case when the Key Vault doesn't exist
+        error_msg = {"message": "these credentials already exist"}
+        return jsonify(error_msg), 200
+    new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='gcp')
+    db.session.add(new_user)
+    db.session.commit()
+    location = "eastus"  # Choose a valid Azure location without special characters
+    create_key_vault(key_vault_name,location,resource_group_name)
+    key_vault = f"https://{key_vault_name}.vault.azure.net/"
+    store_secrets(key_vault,"your-secret-name", secret_string)
+    store_secrets(key_vault,"username", User_name)
+    store_secrets(key_vault,"account-name", account_name)
 
     return jsonify({"message": 'Credential Successfully added', "statusCode": 200})
 
 
-
-
-
-#gcp
 @app.route('/gcp_form', methods=['GET'])
 def gcp_form():
     return render_template('create_gke.html')
@@ -3709,13 +3790,16 @@ def create_gke():
 def json_create_gke():
     # Retrieve form data
     form = request.get_json()
+    account_name = form['account_name']
     project = form['project']
-    Region = form['Region']
+    Region = form['region']
     gke_name = form['gke_name']
     gke_version = form['gke_version']
     node_count = form['node_count']
     cluster_type = form['cluster_type']
-    
+    new_username_record = UsernameTablegcp(username=account_name)
+    db.session.add(new_username_record)
+    db.session.commit()
     gke_version = float(gke_version)
  
     # Initialize variables for vm_name and vm_pass
@@ -3744,16 +3828,14 @@ def json_create_gke():
     with open(file_name, 'r') as file:
         user_data = json.load(file)
 
-    file_name = f'terraform-{user_data["user"]}gcp.tfvars'
+    file_name = f'terraform-{account_name}.tfvars'
     file_path = f'gcp/template/{file_name}'
-    new_username_record = UsernameTablegcp(username={user_data["user"]})
-    db.session.add(new_username_record)
-    db.session.commit()
+
 
     tf_config = f'''
     project = "{project}"
-    Region = "{Region}"
-    gke_name = "{gke_name}"
+    region = "{Region}"
+    cluster_name = "{gke_name}"
     gke_version = "{gke_version}"
     node_count = "{node_count}"
     cluster_type = "{cluster_type}"
@@ -3771,7 +3853,9 @@ def json_create_gke():
     print("Uploading tfvars file to GitLab")
     upload_file_to_gitlab(file_path, tf_config, project_id, access_token, gitlab_url, branch_name)
     print("Tfvars File uploaded successfully")
-
+    # time.sleep(360)
+    print("after 4 mins")
+    check_and_store_gke_cluster_status(account_name,"us-central1-f",gke_name,project)
     # You can also redirect the user to a success page if needed
     return json.dumps( {
             "message": 'Pipeline triggered! gke will be created...',
@@ -3834,28 +3918,7 @@ def josnRegister():
 	   "message": 'duplicate username or email',
 	   "statusCode": 401
 	}), 401
-   #     flash('Your account has been created! You are now able to log in', 'success')
-    #    return redirect(url_for('login'))
-    #return render_template('register.html', title='Register', form=form)
-    #return json.dumps({
-     #      "message": 'Invalid or not mathced with defined expression',
-      #     "statusCode": 401
-       # }), 401
-# @app.route("/login", methods=['GET', 'POST'])#
-# def login():
-#   if current_user.is_authenticated:
-#        return redirect(url_for('dashboard'))
-#   form = LoginForm()
-#   if form.validate_on_submit():
-#      user = User.query.filter_by(email=form.email.data).first()
-#      if user and bcrypt.check_password_hash(user.password, form.password.data):
-#          login_user(user, remember=form.remember.data)
-#          next_page = request.args.get('next')
-#          flash('Login successful.', 'success')
-#          return redirect(next_page) if next_page else redirect(url_for('dashboard'))
-#      else:
-#             flash('Login Unsuccessful. Please check email and password', 'danger')
-#   return render_template('login.html', title='Login', form=form)
+ 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
