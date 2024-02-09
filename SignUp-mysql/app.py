@@ -2730,8 +2730,7 @@ def check_and_store_eks_cluster_status(account, eks_name, Region,key_vault):
             break  # Break the loop once the AKS cluster is created
  
         # Add a sleep interval to avoid continuous checking and reduce resource usage
-        time.sleep(360)
-        time.sleep(360)
+        time.sleep(120)
  
 def check_eks_cluster(eks_name, region,key_vault):
     try:
@@ -3376,50 +3375,45 @@ def gcp2():
     return render_template('gcp2.html')
 @app.route('/json_update_credential_gcp', methods=['POST'])
 def json_update_credential_gcp():
-    try:
-        if 'jsonFile' not in request.files:
-            return json.dumps( {
-                "message": 'failed to create key-vault'
-            }),409
-        json_file = request.files['jsonFile'] # Check if the file has a filename
-        if json_file.filename == '':
-            return render_template('./file_submit.html') # Check if the file is a JSON file
-        if not json_file.filename.endswith('.json'):
-            return render_template('./submit.html')  
-        file_content = json_file.read()
-        secret_string = file_content.decode('utf-8')
-        form = request.get_json()
-        User_name = form['User_name']
-        account_name = form['account_name']
+    if 'jsonFile' not in request.files:
+        return jsonify({"message": 'No JSON file uploaded'}), 400
 
-        key_vault_name = account_name+"gcp"
-        vault_url = f"https://{key_vault_name}.vault.azure.net/"
-        key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
-        if not key_vault_exists:
+    json_file = request.files['jsonFile']
+
+    # Check if the file has a filename
+    if json_file.filename == '':
+        return jsonify({"message": 'No filename provided for JSON file'}), 400
+
+    # Check if the file is a JSON file
+    if not json_file.filename.endswith('.json'):
+        return jsonify({"message": 'Uploaded file is not a JSON file'}), 400
+
+    # Read the file content and decode it
+    file_content = json_file.read()
+    secret_string = file_content.decode('utf-8')
+
+    # Retrieve other form data
+    form = request.form
+    User_name = form.get('User_name')
+    account_name = form.get('account_name')
+    location = "eastus"  # Choose a valid Azure location without special characters
+    resource_group_name = "Cockpit"  
+
+    # Create key vault
+    key_vault_name = account_name + "gcp"
+    key_vault_exists = check_key_vault_existence("f1aed9cb-fcad-472f-b14a-b1a0223fa5a5", "Cockpit", key_vault_name)
+    if not key_vault_exists:
                 # Handle the case when the Key Vault doesn't exist
-            error_msg = {"message": "First Add Credential."}
-            return jsonify(error_msg), 404
-        update_keyvault_secret(vault_url, "your-secret-name", secret_string)
-        update_keyvault_secret(vault_url, "username", User_name)
-        update_keyvault_secret(vault_url, "account-name", account_name)
-        return json.dumps( {
-                "message": 'Credential Update successfully',
-                "statusCode": 200
-        })
-    except ResourceNotFoundError:
-        # Handle the case when a specific secret doesn't exist
-        error_msg = {"message": "First add Credential"}
+        error_msg = {"message": "First Add Credential."}
         return jsonify(error_msg), 404
+    vault_url = f"https://{key_vault_name}.vault.azure.net/"
+    update_keyvault_secret(vault_url, "your-secret-name", secret_string)
+    update_keyvault_secret(vault_url, "username", User_name)
+    update_keyvault_secret(vault_url, "account-name", account_name)
 
-    except HttpResponseError as e:
-        # Handle other HTTP response errors
-        error_msg = {"error_message": f"HTTP response error: {str(e)}"}
-        return jsonify(error_msg), 500
+    return jsonify({"message": 'Credentials update successfully', "statusCode": 200})
 
-    except Exception as e:
-        # Handle other exceptions
-        error_msg = {"error_message": f"An error occurred: {str(e)}"}
-        return jsonify(error_msg), 500
+
 @app.route('/delete_credential_gcp', methods=['POST'])
 def delete_credential_gcp():
     account_name = request.form.get('account_name')
@@ -3664,43 +3658,47 @@ def submit_form_gcp():
 @app.route('/json_submit_form_gcp', methods=['POST'])
 def json_submit_form_gcp():
     if 'jsonFile' not in request.files:
-        return json.dumps( {
-            "message": 'failed to create key-vault'
-        }),409
- 
+        return jsonify({"message": 'No JSON file uploaded'}), 400
+
     json_file = request.files['jsonFile']
- 
+
     # Check if the file has a filename
     if json_file.filename == '':
-        return render_template('./file_submit.html')
- 
+        return jsonify({"message": 'No filename provided for JSON file'}), 400
+
     # Check if the file is a JSON file
     if not json_file.filename.endswith('.json'):
-        return render_template('./submit.html')
+        return jsonify({"message": 'Uploaded file is not a JSON file'}), 400
+
+    # Read the file content and decode it
     file_content = json_file.read()
     secret_string = file_content.decode('utf-8')
-    form = request.get_json()
-    User_name = form['User_name']
-    account_name = form['account_name']
+
+    # Retrieve other form data
+    form = request.form
+    User_name = form.get('User_name')
+    account_name = form.get('account_name')
+    location = "eastus"  # Choose a valid Azure location without special characters
     resource_group_name = "Cockpit"  
-    key_vault_name = account_name+"gcp"
-    created = create_key_vault(key_vault_name,location,resource_group_name)
+
+    # Create key vault
+    key_vault_name = account_name + "gcp"
+    created = create_key_vault(key_vault_name, location, resource_group_name)
     if not created:
-                # Handle the case when the Key Vault doesn't exist
-        error_msg = {"message": "these credentials already exist"}
-        return jsonify(error_msg), 200
+        return jsonify({"message": "These credentials already exist"}), 409
+
+    # Add new user to the database
     new_user = UserAccount(username=User_name, account_name=account_name, cloud_name='gcp')
     db.session.add(new_user)
     db.session.commit()
-    location = "eastus"  # Choose a valid Azure location without special characters
-    create_key_vault(key_vault_name,location,resource_group_name)
+
+    # Store secrets in the key vault
     key_vault = f"https://{key_vault_name}.vault.azure.net/"
-    store_secrets(key_vault,"your-secret-name", secret_string)
-    store_secrets(key_vault,"username", User_name)
-    store_secrets(key_vault,"account-name", account_name)
+    store_secrets(key_vault, "your-secret-name", secret_string)
+    store_secrets(key_vault, "username", User_name)
+    store_secrets(key_vault, "account-name", account_name)
 
-    return jsonify({"message": 'Credential Successfully added', "statusCode": 200})
-
+    return jsonify({"message": 'Credentials successfully added', "statusCode": 200})
 
 @app.route('/gcp_form', methods=['GET'])
 def gcp_form():
