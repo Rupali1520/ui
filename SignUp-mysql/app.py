@@ -498,7 +498,7 @@ def jobs_aws_delete():
 def json_jobs_aws_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'delete_aws_infrastructure'
+    job_name = 'delete-aws-infrastructure'
  
     db_config = {
         'host': '20.207.117.166',
@@ -663,7 +663,7 @@ def json_jobs_azure():
 @app.route('/jobs_azure_delete', methods=['GET'])
 def jobs_azure_delete():
         username = current_user.username 
-        job_name = 'azure_delete_infrastructure'
+        job_name = 'delete-azure-infrastructure'
 
         db_config = {
             'host': '20.207.117.166',
@@ -712,7 +712,7 @@ def jobs_azure_delete():
 def json_jobs_azure_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'azure_delete_infrastructure'
+    job_name = 'delete-azure-infrastructure'
 
     db_config = {
         'host': '20.207.117.166',
@@ -926,7 +926,7 @@ def jobs_gcp_delete():
 def json_jobs_gcp_delete():
     form = request.get_json()
     username = form['username']
-    job_name = 'gcp_delete_infrastructure'
+    job_name = 'delete-gke-infrastructure'
 
     db_config = {
         'host': '20.207.117.166',
@@ -2414,7 +2414,7 @@ def json_delete_gke():
         f.write(f'gke-name = "{gke_name}"\n')
         f.write(f'region = "{region}"\n')
         f.write(f'project_id = "{project_id}"\n')
-    
+    region = region + "-f"
     file_path = f'gke-delete/file.txt'
     tf_config = f''' 
     gke_name = "{gke_name}"

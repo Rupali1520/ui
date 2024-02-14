@@ -1,6 +1,6 @@
 project = "celestial-tract-413511"
 Region = "us-central1"
-gke_name = "manjaris"
-gke_version = "1.13"
+gke_name = "gke2"
+gke_version = "1.2"
 node_count = "1"
 cluster_type = "Public"

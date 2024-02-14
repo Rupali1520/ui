@@ -1,3 +1,2 @@
-gke-name = "manjaris"
-region = "us-central1-f"
-project_id = "51819357"
+aks_name = "backup-aks"
+resource_group = "backup-aks"
