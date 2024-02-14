@@ -334,6 +334,292 @@ def json_recentjoblogs_azure():
  
         return jsonify(response_data)
 
+
+
+@app.route('/recentjob_aws', methods=['GET'])
+def recentjob_aws():
+    username = current_user.username
+    job_name = 'aws_infrastructure'
+ 
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+ 
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+ 
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+ 
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+ 
+    project = gl.projects.get(project_id)
+ 
+    # Get the most recent job ID
+    if job_ids:
+        most_recent_job_id = max(job_ids)
+        return redirect(url_for('logs_aws', job_id=most_recent_job_id))
+ 
+    return render_template('jobs_aws.html', outputs=[])
+ 
+ 
+@app.route('/json_recentjob_aws', methods=['POST'])
+def json_recentjob_aws():
+    form = request.get_json()
+    username = form['username']
+    job_name = 'aws_infrastructure'
+ 
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+ 
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+ 
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+ 
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+ 
+    project = gl.projects.get(project_id)
+ 
+    # Get the most recent job ID
+    if job_ids:
+        most_recent_job_id = max(job_ids)
+        response_data = {
+                'username': username,
+                'most_recent_job_id': most_recent_job_id,
+                'message': 'Most recent job ID retrieved successfully'
+            }
+ 
+        return jsonify(response_data)
+ 
+    # return render_template('jobs_azure.html', outputs=[])
+ 
+@app.route('/recentjoblogs-aws', methods=['GET', 'POST'])
+def recentjoblogs_aws():
+    if current_user.is_authenticated:
+        username = current_user.username
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job_id')
+ 
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+ 
+        response = requests.get(job_url, headers=headers)
+ 
+        for job in response.json():
+ 
+            log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+ 
+            log_response = requests.get(log_url, headers=headers)
+ 
+            log_data = log_response.text
+ 
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ 
+ 
+        clean_logs = ansi_escape.sub('', log_data)
+ 
+ 
+        return render_template('logs-aws.html', username=username, logs=clean_logs)
+    else:
+        return redirect(url_for('login'))
+ 
+@app.route('/json-recentjoblogs-aws', methods=['GET', 'POST'])
+def json_recentjoblogs_aws():
+        form = request.get_json()
+        username = form['username']
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job_id')
+ 
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+ 
+        response = requests.get(job_url, headers=headers)
+ 
+        for job in response.json():
+ 
+            log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+ 
+            log_response = requests.get(log_url, headers=headers)
+ 
+            log_data = log_response.text
+ 
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ 
+ 
+        clean_logs = ansi_escape.sub('', log_data)
+        response_data = {
+                'username': username,
+                'logs': clean_logs
+            }
+ 
+        return jsonify(response_data)
+
+
+@app.route('/recentjob_gcp', methods=['GET'])
+def recentjob_gcp():
+    username = current_user.username
+    job_name = 'gcp_infrastructure'
+ 
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+ 
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+ 
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+ 
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+ 
+    project = gl.projects.get(project_id)
+ 
+    # Get the most recent job ID
+    if job_ids:
+        most_recent_job_id = max(job_ids)
+        return redirect(url_for('logs_gcp', job_id=most_recent_job_id))
+ 
+    return render_template('jobs_gcp.html', outputs=[])
+ 
+ 
+@app.route('/json_recentjob_gcp', methods=['POST'])
+def json_recentjob_gcp():
+    form = request.get_json()
+    username = form['username']
+    job_name = 'gcp_infrastructure'
+ 
+    db_config = {
+        'host': '20.207.117.166',
+        'port': 3306,
+        'user': 'root',
+        'password': 'cockpitpro',
+        'database': 'jobinfo'
+    }
+ 
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor()
+ 
+    # Fetch job IDs for username 'jini' and job_name 'azure_infrastructure'
+    query = f"SELECT job_id FROM users WHERE username = '{username}' AND job_name = '{job_name}'"
+    cursor.execute(query)
+    job_ids = [result[0] for result in cursor.fetchall()]
+ 
+    # Close the database connection
+    cursor.close()
+    connection.close()
+    gl = gitlab.Gitlab(gitlab_url, private_token=access_token)
+ 
+    project = gl.projects.get(project_id)
+ 
+    # Get the most recent job ID
+    if job_ids:
+        most_recent_job_id = max(job_ids)
+        response_data = {
+                'username': username,
+                'most_recent_job_id': most_recent_job_id,
+                'message': 'Most recent job ID retrieved successfully'
+            }
+ 
+        return jsonify(response_data)
+ 
+    # return render_template('jobs_azure.html', outputs=[])
+ 
+@app.route('/recentjoblogs-gcp', methods=['GET', 'POST'])
+def recentjoblogs_gcp():
+    if current_user.is_authenticated:
+        username = current_user.username
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job_id')
+ 
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+ 
+        response = requests.get(job_url, headers=headers)
+ 
+        for job in response.json():
+ 
+            log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+ 
+            log_response = requests.get(log_url, headers=headers)
+ 
+            log_data = log_response.text
+ 
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ 
+ 
+        clean_logs = ansi_escape.sub('', log_data)
+ 
+ 
+        return render_template('logs-gcp.html', username=username, logs=clean_logs)
+    else:
+        return redirect(url_for('login'))
+ 
+@app.route('/json-recentjoblogs-gcp', methods=['GET', 'POST'])
+def json_recentjoblogs_gcp():
+        form = request.get_json()
+        username = form['username']
+        # job_id = request.form.get('job-id')
+        job_id = request.args.get('job_id')
+ 
+        access_token = 'glpat-LryS1Hu_2ZX17MSGhgkz'
+        job_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}'
+        headers = {'PRIVATE-TOKEN': access_token}
+ 
+        response = requests.get(job_url, headers=headers)
+ 
+        for job in response.json():
+ 
+            log_url = f'https://gitlab.com/api/v4/projects/51819357/jobs/{job_id}/trace'
+ 
+            log_response = requests.get(log_url, headers=headers)
+ 
+            log_data = log_response.text
+ 
+        ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+ 
+ 
+        clean_logs = ansi_escape.sub('', log_data)
+        response_data = {
+                'username': username,
+                'logs': clean_logs
+            }
+ 
+        return jsonify(response_data)
+
+
 @app.route('/jobs_aws', methods=['GET'])
 def jobs_aws():
         username = current_user.username
