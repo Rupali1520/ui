@@ -58,7 +58,7 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 app.config['WTF_CSRF_ENABLED'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@20.207.117.166:3306/jobinfo'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@4.188.187.102:3306/jobinfo'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -184,7 +184,7 @@ def recentjob_azure():
     job_name = 'azure_infrastructure'
  
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -221,7 +221,7 @@ def json_recentjob_azure():
     job_name = 'azure_infrastructure'
  
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -325,7 +325,7 @@ def jobs_aws():
         job_name = 'aws_infrastructure'
  
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -374,7 +374,7 @@ def json_jobs_aws():
     job_name = 'aws_infrastructure'
  
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -433,7 +433,7 @@ def jobs_aws_delete():
         job_name = 'delete_aws_infrastructure'
  
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -486,7 +486,7 @@ def json_jobs_aws_delete():
     job_name = 'delete_aws_infrastructure'
  
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -544,7 +544,7 @@ def jobs_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -593,7 +593,7 @@ def json_jobs_azure():
     job_name = 'azure_infrastructure'
 
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -651,7 +651,7 @@ def jobs_azure_delete():
         job_name = 'azure_delete_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -700,7 +700,7 @@ def json_jobs_azure_delete():
     job_name = 'azure_delete_infrastructure'
 
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -758,7 +758,7 @@ def jobs_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -808,7 +808,7 @@ def json_jobs_gcp():
     job_name = 'gcp_infrastructure'
 
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -867,7 +867,7 @@ def jobs_gcp_delete():
         job_name = 'gcp_delete_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -914,7 +914,7 @@ def json_jobs_gcp_delete():
     job_name = 'gcp_delete_infrastructure'
 
     db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1439,7 +1439,7 @@ def get_azure_cluster():
         return redirect(url_for('login'))
 def get_cluster_azure(account_name):
         db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1596,7 +1596,7 @@ def creation_status_aws():
         job_name = 'aws_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1626,7 +1626,7 @@ def json_creation_status_aws():
         job_name = 'aws_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1853,7 +1853,7 @@ def creation_status_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1883,7 +1883,7 @@ def json_creation_status_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1913,7 +1913,7 @@ def creation_status_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1945,7 +1945,7 @@ def json_creation_status_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '20.207.117.166',
+            'host': '4.188.187.102',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2760,7 +2760,7 @@ def azureuser_insert():
 
 def get_account(username,cloud_name):
         db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -2777,7 +2777,7 @@ def get_account(username,cloud_name):
         return name
 def delete_account(account_name):
         db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -2799,7 +2799,7 @@ def json_get_account():
         username = form['User_name']
         cloud_name = form['cloud_name']
         db_config = {
-        'host': '20.207.117.166',
+        'host': '4.188.187.102',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',

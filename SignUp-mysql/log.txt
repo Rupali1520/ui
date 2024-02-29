@@ -380,7 +380,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -440,7 +440,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [13/Feb/2024 08:50:03] "GET /login?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
 203.189.252.74 - - [13/Feb/2024 08:50:03] "GET /login?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
@@ -696,7 +696,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -756,7 +756,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [13/Feb/2024 09:13:48] "POST /JsonLogin HTTP/1.1" 401 -
 203.189.252.74 - - [13/Feb/2024 09:13:49] "POST /JsonLogin HTTP/1.1" 401 -
@@ -1215,7 +1215,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -1275,7 +1275,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [13/Feb/2024 09:29:05] "POST /JsonLogin HTTP/1.1" 401 -
 203.189.252.74 - - [13/Feb/2024 09:29:06] "POST /JsonLogin HTTP/1.1" 401 -
@@ -1686,7 +1686,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -1774,7 +1774,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [13/Feb/2024 09:57:55] "OPTIONS /json-show-details-azure HTTP/1.1" 200 -
 203.189.252.74 - - [13/Feb/2024 09:57:55] "POST /json-show-details-azure HTTP/1.1" 200 -
@@ -2184,7 +2184,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -2244,7 +2244,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [13/Feb/2024 10:28:22] "POST /JsonLogin HTTP/1.1" 200 -
 103.86.174.91 - - [13/Feb/2024 10:35:45] "OPTIONS /json-show-details-aws HTTP/1.1" 200 -
@@ -2463,7 +2463,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -2523,7 +2523,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [13/Feb/2024 11:20:54] "GET /delete_aks?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
 203.189.252.74 - - [13/Feb/2024 11:20:54] "GET /delete_aks?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
@@ -2788,7 +2788,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -2872,7 +2872,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [14/Feb/2024 07:51:38] "OPTIONS /json-show-details-azure HTTP/1.1" 200 -
 203.189.252.74 - - [14/Feb/2024 07:51:38] "POST /json-show-details-azure HTTP/1.1" 200 -
@@ -2909,7 +2909,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -2993,7 +2993,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [14/Feb/2024 07:54:09] "OPTIONS /json-show-details-aws HTTP/1.1" 200 -
 203.189.252.74 - - [14/Feb/2024 07:54:09] "POST /json-show-details-aws HTTP/1.1" 200 -
@@ -3174,7 +3174,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -3258,7 +3258,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 203.189.252.74 - - [14/Feb/2024 08:53:41] "POST /json_recentjob_azure HTTP/1.1" 200 -
 203.189.252.74 - - [14/Feb/2024 08:53:46] "OPTIONS /json-recentjoblogs-azure?job_id=6158801087 HTTP/1.1" 200 -
@@ -3429,7 +3429,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+mysql.connector.errors.OperationalError: 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 
 The above exception was the direct cause of the following exception:
 
@@ -3513,7 +3513,7 @@ Traceback (most recent call last):
     self._send_pkt(
   File "/home/cockpit/.local/lib/python3.8/site-packages/mysql/connector/network.py", line 163, in _send_pkt
     raise OperationalError(
-sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '20.207.117.166:3306', system error: 32 Broken pipe
+sqlalchemy.exc.OperationalError: (mysql.connector.errors.OperationalError) 2055: Lost connection to MySQL server at '4.188.187.102:3306', system error: 32 Broken pipe
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 ERROR: (ResourceGroupNotFound) Resource group 'cockpit-team' could not be found.
 Code: ResourceGroupNotFound
