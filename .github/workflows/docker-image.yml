@@ -48,4 +48,4 @@ jobs:
         password: ${{ secrets.VM_PASSWORD }}
         script: |
           sudo docker pull rupali1520/cockpit-backend:1
-          sudo docker run rupali1520/cockpit-backend:1
+          sudo docker run -d rupali1520/cockpit-backend:1
