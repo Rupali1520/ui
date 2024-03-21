@@ -54,4 +54,5 @@ jobs:
         script: |
           sudo docker pull rupali1520/cockpit-backend:prod
           sudo docker stop cockpit-backend
+          sudo docker rm -f cockpit-backend
           sudo docker run -dp 4000:4000 --name cockpit-backend rupali1520/cockpit-backend:prod
