@@ -12,11 +12,13 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Build Docker image
-      run: cd SignUp-mysql
-    - name: Build Docker image
-      run: ls
       
+    - name: Navigate to SignUp-mysql directory
+      run: cd SignUp-mysql
+      
+    - name: List files in the directory
+      run: ls
+
     - name: Build Docker image
       run: docker build -t rupali1520/cockpit-backend:1 .
 
