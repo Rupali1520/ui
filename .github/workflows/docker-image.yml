@@ -23,7 +23,10 @@ jobs:
     - name: Build Docker image
       run: |
        cd ./SignUp-mysql && ls
-       docker build -t rupali1520/cockpit-backend:1 .
+       docker pull rupali1520/cockpit-backend:1
+       docker tag rupali1520/cockpit-backend:1 rupali1520/cockpit-backend-archived:latest
+
+       docker build -t rupali1520/cockpit-backend:prod .
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
@@ -32,7 +35,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker image to Docker Hub
-      run: docker push rupali1520/cockpit-backend:1
+      run: |
+       docker push rupali1520/cockpit-backend:prod 
+       docker push rupali1520/cockpit-backend-archived:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,6 +52,6 @@ jobs:
         username: ${{ secrets.VM_USERNAME }}
         password: ${{ secrets.VM_PASSWORD }}
         script: |
-          sudo docker pull rupali1520/cockpit-backend:1
-          sudo docker stop pedantic_lovelace
+          sudo docker pull rupali1520/cockpit-backend:prod
+          sudo docker stop cockpit-backend
           sudo docker run -dp 4000:4000 --name cockpit-backend rupali1520/cockpit-backend:1
