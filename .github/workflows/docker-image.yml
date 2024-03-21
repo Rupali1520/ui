@@ -14,7 +14,8 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Navigate to SignUp-mysql directory
-      run: cd SignUp-mysql
+      run: cd ./SignUp-mysql && ls
+      
       
     - name: List files in the directory
       run: ls
