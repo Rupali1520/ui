@@ -47,5 +47,5 @@ jobs:
         username: ${{ secrets.VM_USERNAME }}
         password: ${{ secrets.VM_PASSWORD }}
         script: |
-          docker pull rupali1520/cockpit-backend:1
-          docker run rupali1520/cockpit-backend:1
+          sudo docker pull rupali1520/cockpit-backend:1
+          sudo docker run rupali1520/cockpit-backend:1
