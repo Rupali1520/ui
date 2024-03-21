@@ -48,4 +48,5 @@ jobs:
         password: ${{ secrets.VM_PASSWORD }}
         script: |
           sudo docker pull rupali1520/cockpit-backend:1
-          sudo docker run -dp 4000:4000 rupali1520/cockpit-backend:1
+          sudo docker stop pedantic_lovelace
+          sudo docker run -dp 4000:4000 --name cockpit-backend rupali1520/cockpit-backend:1
