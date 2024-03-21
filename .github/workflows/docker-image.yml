@@ -21,7 +21,9 @@ jobs:
       run: ls
 
     - name: Build Docker image
-      run: docker build -t rupali1520/cockpit-backend:1 .
+      run: |
+       cd ./SignUp-mysql && ls
+       docker build -t rupali1520/cockpit-backend:1 .
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
