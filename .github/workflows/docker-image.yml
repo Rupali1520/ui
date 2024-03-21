@@ -15,7 +15,7 @@ jobs:
     - name: Build Docker image
       run: pwd
     - name: Build Docker image
-      run: ls
+      run: cd SignUp-mysql
       
     - name: Build Docker image
       run: docker build -t rupali1520/cockpit-backend:1 .
