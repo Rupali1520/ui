@@ -50,3 +50,5 @@ azure-mgmt-resource
 azure-keyvault-secrets 
 
 azure-storage-blob
+
+pytz
