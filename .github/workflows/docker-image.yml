@@ -23,8 +23,8 @@ jobs:
     - name: Build Docker image
       run: |
        cd ./SignUp-mysql && ls
-       docker pull rupali1520/cockpit-backend:1
-       docker tag rupali1520/cockpit-backend:1 rupali1520/cockpit-backend-archived:latest
+       docker pull rupali1520/cockpit-backend:prod
+       docker tag rupali1520/cockpit-backend:prod rupali1520/cockpit-backend-archived:latest
 
        docker build -t rupali1520/cockpit-backend:prod .
 
