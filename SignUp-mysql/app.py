@@ -197,15 +197,15 @@ def google_login():
 
 @app.route("/google/login/callback")
 def callback():
+    
     # Get authorization code Google sent back to you
     code = request.args.get("code")
 
-    # Find out what URL to hit to get tokens that allow you to ask for
-    # things on behalf of a user
+    # Getting token_endpoint from Google
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
-    # Prepare and send request to get tokens! Yay tokens!
+    # Prepare and send request to get tokens
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
@@ -222,16 +222,12 @@ def callback():
     # Parse the tokens!
     client.parse_request_body_response(json.dumps(token_response.json()))
 
-    # Now that we have tokens (yay) let's find and hit URL
-    # from Google that gives you user's profile information,
-    # including their Google Profile Image and Email
+    # Hitting URL to get user's information from Google
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
 
-    # We want to make sure their email is verified.
-    # The user authenticated with Google, authorized our
-    # app, and now we've verified their email through Google!
+    # Check for verified email address
     if userinfo_response.json().get("email_verified"):
         unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
@@ -240,22 +236,18 @@ def callback():
     else:
         return "User email not available or not verified by Google.", 400
 
-    # Create a user in our db with the information provided
-    # by Google
-    user = User(
-        id=unique_id, username=users_name, email=users_email
-    )
+    # Create a user in our db with the information provided by Google
+    user = User(id=unique_id, username=users_name, email=users_email)
 
-    # Doesn't exist? Add to database
+    # Doesn't exist? Then add and commit to database
     if not User.query.filter_by(email=users_email).first():
-        # user = User(id=unique_id, username=users_name, email=users_email) 
         db.session.add(user)
         db.session.commit()
 
     # Begin user session by logging the user in
     login_user(user)
 
-    # Send user back to homepage
+    # Send user back to dashboard
     return redirect(url_for("dashboard"))
 
 # @app.route("/google/logout")
