@@ -45,6 +45,12 @@ import gitlab
 import concurrent.futures
 from gitlab.exceptions import GitlabAuthenticationError, GitlabGetError, GitlabListError
 from datetime import datetime
+from oauthlib.oauth2 import WebApplicationClient
+from dotenv import load_dotenv
+
+
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 gitlab_url = "https://gitlab.com"
 project_id = "51819357"
@@ -58,12 +64,22 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 app.config['WTF_CSRF_ENABLED'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@4.188.187.102:3306/jobinfo'
+load_dotenv()
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@4.188.187.102:3306/jobinfo'
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+GOOGLE_DISCOVERY_URL = (
+    "https://accounts.google.com/.well-known/openid-configuration"
+)
+
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+client = WebApplicationClient(GOOGLE_CLIENT_ID)
  
 class UserAccount(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -89,10 +105,10 @@ class UsernameTablegcp(db.Model):
     def __repr__(self):
         return f"UsernameTable('{self.username}')"
 class User(db.Model,UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    id = db.Column(db.String(30), primary_key=True)
+    username = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(60), nullable=False, default='default_password')
     todo = db.relationship('todo', backref='items', lazy=True)
  
     def __repr__(self):
@@ -160,7 +176,93 @@ class RegistrationForm(FlaskForm):
 
 
 
+def get_google_provider_cfg():
+    return requests.get(GOOGLE_DISCOVERY_URL).json()
 
+@app.route('/google/login')
+def google_login():
+    # Find out what URL to hit for Google login
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+    
+    # Use library to construct the request for Google login and provide
+    # scopes that let you retrieve user's profile from Google
+    request_uri = client.prepare_request_uri(
+        authorization_endpoint,
+        redirect_uri=request.base_url + "/callback",
+        scope=["openid", "email", "profile"],
+    )
+    print(request_uri)
+    return redirect(request_uri)
+
+@app.route("/google/login/callback")
+def callback():
+    # Get authorization code Google sent back to you
+    code = request.args.get("code")
+
+    # Find out what URL to hit to get tokens that allow you to ask for
+    # things on behalf of a user
+    google_provider_cfg = get_google_provider_cfg()
+    token_endpoint = google_provider_cfg["token_endpoint"]
+
+    # Prepare and send request to get tokens! Yay tokens!
+    token_url, headers, body = client.prepare_token_request(
+        token_endpoint,
+        authorization_response=request.url,
+        redirect_url=request.base_url,
+        code=code,
+    )
+    token_response = requests.post(
+        token_url,
+        headers=headers,
+        data=body,
+        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+    )
+
+    # Parse the tokens!
+    client.parse_request_body_response(json.dumps(token_response.json()))
+
+    # Now that we have tokens (yay) let's find and hit URL
+    # from Google that gives you user's profile information,
+    # including their Google Profile Image and Email
+    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+    uri, headers, body = client.add_token(userinfo_endpoint)
+    userinfo_response = requests.get(uri, headers=headers, data=body)
+
+    # We want to make sure their email is verified.
+    # The user authenticated with Google, authorized our
+    # app, and now we've verified their email through Google!
+    if userinfo_response.json().get("email_verified"):
+        unique_id = userinfo_response.json()["sub"]
+        users_email = userinfo_response.json()["email"]
+        # picture = userinfo_response.json()["picture"]
+        users_name = userinfo_response.json()["name"]
+    else:
+        return "User email not available or not verified by Google.", 400
+
+    # Create a user in our db with the information provided
+    # by Google
+    user = User(
+        id=unique_id, username=users_name, email=users_email
+    )
+
+    # Doesn't exist? Add to database
+    if not User.query.filter_by(email=users_email).first():
+        # user = User(id=unique_id, username=users_name, email=users_email) 
+        db.session.add(user)
+        db.session.commit()
+
+    # Begin user session by logging the user in
+    login_user(user)
+
+    # Send user back to homepage
+    return redirect(url_for("dashboard"))
+
+# @app.route("/google/logout")
+# @login_required
+# def google_logout():
+#     logout_user()
+#     return redirect(url_for("home"))
 
 def RegistrationJSONForm(data):
     #print(data['username'])
@@ -180,7 +282,7 @@ class LoginForm(FlaskForm):
  
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.query.get(user_id)
  
  
 @app.route("/")
@@ -4379,4 +4481,5 @@ def delete(id):
  
  
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port=4000)
+    with app.app_context():
+        app.run(debug=True,host='0.0.0.0',port=4000)
