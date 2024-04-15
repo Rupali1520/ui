@@ -21,6 +21,7 @@ cachetools==5.3.3
 certifi==2024.2.2
 cffi==1.16.0
 chardet==3.0.4
+charset-normalizer==3.3.2
 click==8.1.7
 cryptography==42.0.5
 dnspython==2.6.1
@@ -37,6 +38,7 @@ google-auth==2.29.0
 google-auth-httplib2==0.2.0
 google-cloud-container==2.45.0
 googleapis-common-protos==1.63.0
+greenlet==3.0.3
 grpcio==1.62.1
 grpcio-status==1.62.1
 httplib2==0.22.0
@@ -65,7 +67,7 @@ python-decouple==3.8
 python-dotenv==1.0.1
 python-gitlab==1.15.0
 pytz==2024.1
-requests==2.21.0
+requests==2.31.0
 rsa==4.9
 s3transfer==0.10.1
 six==1.16.0
