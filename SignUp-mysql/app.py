@@ -104,15 +104,28 @@ class UsernameTablegcp(db.Model):
 
     def __repr__(self):
         return f"UsernameTable('{self.username}')"
+    
+    
 class User(db.Model,UserMixin):
-    id = db.Column(db.String(30), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False, default='default_password')
+    token = db.Column(db.String(120))
+    provider = db.Column(db.String(30), nullable=False, default='self_provider')
     todo = db.relationship('todo', backref='items', lazy=True)
+    
+    def is_google_provider(self):
+        if self.provider == 'google':
+            return True
+    
+    def get_auth_token(self):
+        return self.token
  
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
+    
+    
 class aks_cluster(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
@@ -220,7 +233,9 @@ def callback():
     )
 
     # Parse the tokens!
-    client.parse_request_body_response(json.dumps(token_response.json()))
+    # client.parse_request_body_response(json.dumps(token_response.json()))
+    tokens = client.parse_request_body_response(json.dumps(token_response.json()))
+    access_token = tokens.get('access_token')
 
     # Hitting URL to get user's information from Google
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
@@ -237,7 +252,7 @@ def callback():
         return "User email not available or not verified by Google.", 400
 
     # Create a user in our db with the information provided by Google
-    user = User(id=unique_id, username=users_name, email=users_email)
+    user = User(username=users_name, email=users_email, token=access_token, provider='google')
 
     # Doesn't exist? Then add and commit to database
     if not User.query.filter_by(email=users_email).first():
@@ -2380,6 +2395,7 @@ def gcp_del():
 
  
 @app.route('/aws')
+@login_required
 def aws():
     return render_template('aws.html')
 @app.route('/aws1')
@@ -4253,7 +4269,18 @@ def index():
 @app.route("/about")
 def about():
     return render_template('about.html', title='About')
- 
+
+
+def user_to_dict(user):
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'password': user.password,
+        'token': user.token,
+        'provider': user.provider
+    }
+
 @app.route("/register", methods=['GET','POST'])
 def register():
     if current_user.is_authenticated:
@@ -4264,8 +4291,7 @@ def register():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user_detail = {
-             "user": user,
-        
+            "user": user_to_dict(user),
         }
         file_name = "user_name.json"
         with open(file_name, 'w') as file:
@@ -4364,6 +4390,12 @@ def JsonLogin():
 
 @app.route("/logout")
 def logout():
+    if current_user.is_google_provider:
+        token = current_user.get_auth_token()
+        requests.post('https://oauth2.googleapis.com/revoke',
+            params={'token': token},
+            headers = {'content-type': 'application/x-www-form-urlencoded'})
+
     logout_user()
     flash('Logout successful.', 'success')
     return redirect(url_for('home'))
