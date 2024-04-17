@@ -250,26 +250,25 @@ def callback():
         users_name = userinfo_response.json()["name"]
     else:
         return "User email not available or not verified by Google.", 400
-
-    # Create a user in our db with the information provided by Google
-    user = User(username=users_name, email=users_email, token=access_token, provider='google')
-
-    # Doesn't exist? Then add and commit to database
-    if not User.query.filter_by(email=users_email).first():
+    
+    # Check if user exist in db
+    user = User.query.filter_by(email=users_email).first()
+    
+    if not user:
+        # add new user in db
+        user = User(username=users_name, email=users_email, token=access_token, provider='google')
         db.session.add(user)
         db.session.commit()
-
-    # Begin user session by logging the user in
+    elif user and (user.token != access_token):
+        # update user access_token
+        user.token = access_token
+        db.session.commit()
+    
+    # Login user session
     login_user(user)
-
+    
     # Send user back to dashboard
     return redirect(url_for("dashboard"))
-
-# @app.route("/google/logout")
-# @login_required
-# def google_logout():
-#     logout_user()
-#     return redirect(url_for("home"))
 
 def RegistrationJSONForm(data):
     #print(data['username'])
@@ -1387,6 +1386,7 @@ def connect_to_cluster_az():
 
 @app.route('/final-dashboard', methods=['GET', 'POST'])
 def dashboard():
+    print(f"dashboard_is_auth: {current_user.is_authenticated}")
     if current_user.is_authenticated:
         username = current_user.username
         return render_template('final-dashboard.html', username=username)
@@ -4334,6 +4334,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            print(f"Normaluser: {user}")
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             flash('Login successful.', 'success')
@@ -4389,6 +4390,7 @@ def JsonLogin():
            
 
 @app.route("/logout")
+@login_required
 def logout():
     if current_user.is_google_provider:
         token = current_user.get_auth_token()
