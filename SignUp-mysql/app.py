@@ -323,7 +323,7 @@ def google_callback():
 #     # Hitting URL to get user's information from GitHub
 #     # userinfo_endpoint = github_provider_cfg["userinfo_endpoint"]
 #     uri ='https://api.github.com/user'
-#     headers = {'Authorization': 'Bearer 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'}
+#     headers = {'Authorization': }
 #     # uri, headers, body = client_github.add_token(userinfo_endpoint)
 #     userinfo_response = requests.get(uri, headers=headers)
 #     print(f"Response Content: {userinfo_response.text}")
