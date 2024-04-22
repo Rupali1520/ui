@@ -71,10 +71,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI"
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = os.environ.get("GOOGLE_DISCOVERY_URL", None)
-GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", None)
-GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", None)
-print(f"Github CLID: {GITHUB_CLIENT_ID}")
-# GITHUB_AUTHORIZATION_URL = os.environ.get("GITHUB_DISCOVERY_URL", None)
+# GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", None)
+# GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", None)
+
 
 
 db = SQLAlchemy(app)
@@ -423,10 +422,6 @@ def microsoft_callback():
         user = User(username=users_name, email=users_email, provider='microsoft')
         db.session.add(user)
         db.session.commit()
-    # elif user and (user.token != access_token):
-    #     # update access_token of existing user
-    #     user.token = access_token
-    #     db.session.commit()
 
     # login the user
     login_user(user)
