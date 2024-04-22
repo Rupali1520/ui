@@ -66,8 +66,8 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 app.config['WTF_CSRF_ENABLED'] = False
 
 load_dotenv()
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@4.188.187.102:3306/jobinfo'
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = os.environ.get("GOOGLE_DISCOVERY_URL", None)
@@ -420,13 +420,13 @@ def microsoft_callback():
 
     if not user:
         # add new user in db
-        user = User(username=users_name, email=users_email, token=access_token, provider='microsoft')
+        user = User(username=users_name, email=users_email, provider='microsoft')
         db.session.add(user)
         db.session.commit()
-    elif user and (user.token != access_token):
-        # update access_token of existing user
-        user.token = access_token
-        db.session.commit()
+    # elif user and (user.token != access_token):
+    #     # update access_token of existing user
+    #     user.token = access_token
+    #     db.session.commit()
 
     # login the user
     login_user(user)
