@@ -1,1 +1,1 @@
-{"user": "cockpit-team"}
+{"user": {"id": null, "username": "test", "email": "test@test.com", "password": "$2b$12$Vm9Ykl7xT0msRW8QsmBtJu8W7uHHJ/EvIwm428IMoX/mu/mCotn5C", "token": null, "provider": null}}

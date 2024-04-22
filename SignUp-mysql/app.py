@@ -45,6 +45,13 @@ import gitlab
 import concurrent.futures
 from gitlab.exceptions import GitlabAuthenticationError, GitlabGetError, GitlabListError
 from datetime import datetime
+from oauthlib.oauth2 import WebApplicationClient
+from dotenv import load_dotenv
+import jwt
+
+
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 gitlab_url = "https://gitlab.com"
 project_id = "51819357"
@@ -58,12 +65,26 @@ app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
 app.config['WTF_CSRF_ENABLED'] = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:cockpitpro@4.188.187.102:3306/jobinfo'
+load_dotenv()
+
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+GOOGLE_DISCOVERY_URL = os.environ.get("GOOGLE_DISCOVERY_URL", None)
+# GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", None)
+# GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", None)
+
+
+
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+client = WebApplicationClient(GOOGLE_CLIENT_ID)
+client_github = WebApplicationClient(GITHUB_CLIENT_ID)
+
  
 class UserAccount(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -88,15 +109,27 @@ class UsernameTablegcp(db.Model):
 
     def __repr__(self):
         return f"UsernameTable('{self.username}')"
+    
+    
 class User(db.Model,UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(60), nullable=False, default='default_password')
+    token = db.Column(db.String(120))
+    provider = db.Column(db.String(30), nullable=False, default='self_provider')
     todo = db.relationship('todo', backref='items', lazy=True)
+    
+    def get_provider(self):
+        return self.provider
+    
+    def get_auth_token(self):
+        return self.token
  
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
+    
+    
 class aks_cluster(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
@@ -158,9 +191,246 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError('email already exist. Please choose a different one.')
 
+################### GOOGLE SSO ###################
+
+def get_google_provider_cfg():
+    return requests.get(GOOGLE_DISCOVERY_URL).json()
+
+@app.route('/google/login')
+def google_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    # Find out what URL to hit for Google login
+    google_provider_cfg = get_google_provider_cfg()
+    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+    
+    # Construct the request for Google login with scopes
+    request_uri = client.prepare_request_uri(
+        authorization_endpoint,
+        redirect_uri=request.base_url + "/callback",
+        scope=["openid", "email", "profile"],
+    )
+    print(request_uri)
+    return redirect(request_uri)
+
+@app.route("/google/login/callback")
+def google_callback():
+    
+    # Get authorization code Google sent back
+    code = request.args.get("code")
+
+    # Getting token_endpoint from Google
+    google_provider_cfg = get_google_provider_cfg()
+    token_endpoint = google_provider_cfg["token_endpoint"]
+
+    # Prepare and send request to get tokens
+    token_url, headers, body = client.prepare_token_request(
+        token_endpoint,
+        authorization_response=request.url,
+        redirect_url=request.base_url,
+        code=code,
+    )
+    token_response = requests.post(
+        token_url,
+        headers=headers,
+        data=body,
+        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+    )
+
+    # Parse the tokens!
+    tokens = client.parse_request_body_response(json.dumps(token_response.json()))
+    access_token = tokens.get('access_token')
+
+    # Hitting URL to get user's information from Google
+    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+    uri, headers, body = client.add_token(userinfo_endpoint)
+    userinfo_response = requests.get(uri, headers=headers, data=body)
+
+    # Check for verified email address
+    if userinfo_response.json().get("email_verified"):
+        unique_id = userinfo_response.json()["sub"]
+        users_email = userinfo_response.json()["email"]
+        users_name = userinfo_response.json()["name"]
+    else:
+        return "User email not available or not verified by Google.", 400
+    
+    # Check if user exist in db
+    user = User.query.filter_by(email=users_email).first()
+    
+    if not user:
+        # add new user in db
+        user = User(username=users_name, email=users_email, token=access_token, provider='google')
+        db.session.add(user)
+        db.session.commit()
+    elif user and (user.token != access_token):
+        # update user access_token
+        user.token = access_token
+        db.session.commit()
+    
+    # Login user session
+    login_user(user)
+    
+    # Send user back to dashboard
+    return redirect(url_for("dashboard"))
+
+###########GitHub SSO ################
+# GITHUB_AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
+# GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"
+
+# @app.route('/github/login')
+# def github_login():
+#     # Use library to construct the request for GitHub login and provide
+#     # scopes that let you retrieve user's profile from GitHub
+    
+#     request_uri = client_github.prepare_request_uri(
+#         GITHUB_AUTHORIZATION_URL,
+#         redirect_uri=request.base_url + "/callback",
+#         scope=["user:email"],
+#     )
+#     print(request_uri)
+#     return redirect(request_uri)
+
+# @app.route("/github/login/callback")
+# def github_callback():
+#     # Get authorization code GitHub sent back to you
+#     code = request.args.get("code")
+
+#     # Prepare and send request to get tokens
+#     token_url, headers, body = client_github.prepare_token_request(
+#         GITHUB_TOKEN_URL,
+#         authorization_response=request.url,
+#         redirect_url=request.base_url,
+#         code=code,
+#     )
+#     print(f"Token_URL: {token_url}, Headers: {headers}, Body: {body}")
+#     token_response = requests.post(
+#         token_url,
+#         headers=headers,
+#         data=body,
+#         auth=(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET),
+#     )
+    
+#     print(f"Token_Response: {token_response}")
+#     print(f"Status Code: {token_response.status_code}")
+#     print(f"Response Content: {token_response.text}")
+
+#     # Parse the tokens!
+#     # tokens = client_github.parse_request_body_response(json.dumps(token_response.json()))
+#     # access_token = tokens.get('access_token')
+
+#     # Hitting URL to get user's information from GitHub
+#     # userinfo_endpoint = github_provider_cfg["userinfo_endpoint"]
+#     uri ='https://api.github.com/user'
+#     headers = {'Authorization': }
+#     # uri, headers, body = client_github.add_token(userinfo_endpoint)
+#     userinfo_response = requests.get(uri, headers=headers)
+#     print(f"Response Content: {userinfo_response.text}")
+
+#     # Check for verified email address
+#     # if userinfo_response.json().get("email_verified"):
+#     # unique_id = userinfo_response.json()["sub"]
+#     users_email = userinfo_response.json()["email"]
+#     users_name = userinfo_response.json()["login"]
+#     # else:
+#     #     return "User email not available or not verified by GitHub.", 400
+    
+#     # Check if user exist in db
+#     user = User.query.filter_by(username=users_name).first()
+    
+#     if not user:
+#         # add new user in db
+#         user = User(username=users_name, email=users_email, token=access_token, provider='github')
+#         db.session.add(user)
+#         db.session.commit()
+#     elif user and (user.token != access_token):
+#         # update user access_token
+#         user.token = access_token
+#         db.session.commit()
+    
+#     # Login user session
+#     login_user(user)
+    
+#     # Send user back to dashboard
+#     return redirect(url_for("dashboard"))
 
 
 
+##################MICROSOFT SSO####################
+
+# Microsoft information
+MICROSOFT_DISCOVERY_URL = os.environ.get("MICROSOFT_DISCOVERY_URL", None)
+MICROSOFT_CLIENT_ID = os.environ.get("MICROSOFT_CLIENT_ID", None)
+MICROSOFT_CLIENT_SECRET = os.environ.get("MICROSOFT_CLIENT_SECRET", None)
+client_microsoft = WebApplicationClient(MICROSOFT_CLIENT_ID)
+
+def get_microsoft_provider_cfg():
+    return requests.get(MICROSOFT_DISCOVERY_URL).json()
+
+@app.route("/microsoft/login")
+def microsoft_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    # Find out what URL to hit for Google login
+    microsoft_provider_cfg = get_microsoft_provider_cfg()
+    authorization_endpoint = microsoft_provider_cfg["authorization_endpoint"]
+
+    request_uri = client_microsoft.prepare_request_uri(
+        authorization_endpoint,
+        redirect_uri=request.base_url + "/callback",
+        scope=["openid", "email", "profile"],
+    )
+    return redirect(request_uri)
+
+@app.route("/microsoft/login/callback")
+def microsoft_callback():
+    code = request.args.get("code")
+
+    microsoft_provider_cfg = get_microsoft_provider_cfg()
+    token_endpoint = microsoft_provider_cfg["token_endpoint"]
+
+    token_url, headers, body = client_microsoft.prepare_token_request(
+        token_endpoint,
+        authorization_response=request.url,
+        redirect_url=request.base_url,
+        code=code
+    )
+    token_response = requests.post(
+        token_url,
+        headers=headers,
+        data=body,
+        auth=(MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET),
+    )
+    print(f"Token response: {token_response.json()}")
+    
+    access_token = token_response.json().get('access_token')
+    # Extract the ID token from the token response
+    id_token = token_response.json().get('id_token')
+
+    # Decode the ID token
+    decoded_token = jwt.decode(id_token, options={"verify_signature": False})
+    print(f"Decode Token: {decoded_token}")
+    # Now you can access the user details stored in the decoded token
+    users_email = decoded_token["preferred_username"]
+    users_name = decoded_token["name"]
+
+    user = User.query.filter_by(email=users_email).first()
+
+    if not user:
+        # add new user in db
+        user = User(username=users_name, email=users_email, provider='microsoft')
+        db.session.add(user)
+        db.session.commit()
+
+    # login the user
+    login_user(user)
+
+    # redirect login user to dashborad
+    return redirect(url_for("dashboard"))
+
+
+###################################################
 
 def RegistrationJSONForm(data):
     #print(data['username'])
@@ -180,7 +450,7 @@ class LoginForm(FlaskForm):
  
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.query.get(user_id)
  
  
 @app.route("/")
@@ -1278,6 +1548,7 @@ def connect_to_cluster_az():
 
 @app.route('/final-dashboard', methods=['GET', 'POST'])
 def dashboard():
+    print(f"dashboard_is_auth: {current_user.is_authenticated}")
     if current_user.is_authenticated:
         username = current_user.username
         return render_template('final-dashboard.html', username=username)
@@ -2286,6 +2557,7 @@ def gcp_del():
 
  
 @app.route('/aws')
+@login_required
 def aws():
     return render_template('aws.html')
 @app.route('/aws1')
@@ -4159,7 +4431,18 @@ def index():
 @app.route("/about")
 def about():
     return render_template('about.html', title='About')
- 
+
+
+def user_to_dict(user):
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'password': user.password,
+        'token': user.token,
+        'provider': user.provider
+    }
+
 @app.route("/register", methods=['GET','POST'])
 def register():
     if current_user.is_authenticated:
@@ -4170,8 +4453,7 @@ def register():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user_detail = {
-             "user": user,
-        
+            "user": user_to_dict(user),
         }
         file_name = "user_name.json"
         with open(file_name, 'w') as file:
@@ -4214,6 +4496,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            print(f"Normaluser: {user}")
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             flash('Login successful.', 'success')
@@ -4269,7 +4552,16 @@ def JsonLogin():
            
 
 @app.route("/logout")
+@login_required
 def logout():
+    if current_user.get_provider() == 'google':
+        token = current_user.get_auth_token()
+        requests.post('https://oauth2.googleapis.com/revoke',
+            params={'token': token},
+            headers = {'content-type': 'application/x-www-form-urlencoded'})
+    elif current_user.get_provider() == 'microsoft':  
+        requests.get("https://login.microsoftonline.com/common/oauth2/v2.0/logout")
+
     logout_user()
     flash('Logout successful.', 'success')
     return redirect(url_for('home'))
@@ -4379,4 +4671,5 @@ def delete(id):
  
  
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port=4000)
+    with app.app_context():
+        app.run(debug=True,host='0.0.0.0',port=4000)
