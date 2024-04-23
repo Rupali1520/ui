@@ -83,7 +83,7 @@ login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
-client_github = WebApplicationClient(GITHUB_CLIENT_ID)
+# client_github = WebApplicationClient(GITHUB_CLIENT_ID)
 
  
 class UserAccount(db.Model):
