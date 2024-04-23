@@ -196,7 +196,7 @@ class RegistrationForm(FlaskForm):
 def get_google_provider_cfg():
     return requests.get(GOOGLE_DISCOVERY_URL).json()
 
-@app.route('/google/login')
+@app.route('/google/login', methods=['GET', 'POST'])
 def google_login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
@@ -367,7 +367,7 @@ client_microsoft = WebApplicationClient(MICROSOFT_CLIENT_ID)
 def get_microsoft_provider_cfg():
     return requests.get(MICROSOFT_DISCOVERY_URL).json()
 
-@app.route("/microsoft/login")
+@app.route("/microsoft/login", methods=['GET', 'POST'])
 def microsoft_login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
