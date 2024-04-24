@@ -1,11 +1,13 @@
-FROM python:3.8
+FROM python:3.8-slim-buster
 
 WORKDIR /app
 
-COPY . /app
+COPY requirements.txt requirements.txt
 
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
-EXPOSE 80
+COPY . .
+
+EXPOSE 4000
 
 CMD ["python3", "app.py"]
