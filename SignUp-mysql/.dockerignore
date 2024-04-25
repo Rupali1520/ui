@@ -1,0 +1,30 @@
+# Ignore git and cache directories
+.git
+.gitignore
+__pycache__
+
+# Ignore log files and databases
+*.log
+*.sql
+*.sqlite
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore Python compiled files
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+
+# Ignore node modules
+node_modules
+
+# Ignore folders
+manifestfiles/
+
+# Ignore sensitive data
+.env
+*.pem
+*.key
