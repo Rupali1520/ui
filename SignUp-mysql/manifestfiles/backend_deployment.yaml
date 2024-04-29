@@ -14,7 +14,13 @@ spec:
     spec:
       containers:
       - name: flask-backend
-        image: rupali1520/cockpit-backend:prod
+        image: cockpitpro.azurecr.io/cockpit_be:latest
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: cockpitbackendenv
         ports:
         - containerPort: 4000
         resources: {}
+      imagePullSecrets:
+      - name: acrlogincockpitpro

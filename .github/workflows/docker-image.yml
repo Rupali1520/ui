@@ -23,9 +23,6 @@ jobs:
     - name: Build Docker image
       run: |
        cd ./SignUp-mysql && ls
-       docker pull rupali1520/cockpit-backend:prod
-       docker tag rupali1520/cockpit-backend:prod rupali1520/cockpit-backend-archived:latest
-
        docker build . -t cockpitpro.azurecr.io/cockpit_be:latest
 
     - name: Log in to ACR
