@@ -59,7 +59,7 @@ access_token = "glpat-LryS1Hu_2ZX17MSGhgkz"
 branch_name = "featurebrach1"
 app = Flask(__name__, static_url_path='/static')
 
-CORS(app) 
+CORS(app, resources={r"/*": {"origins": "http://cockpitfrontend-svc"}})
 
 app.config['SECRET_KEY'] = '5791628bb0b13ce0c676dfde280ba245'
 
