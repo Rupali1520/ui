@@ -469,7 +469,7 @@ def recentjob_azure():
     job_name = 'azure_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -506,7 +506,7 @@ def json_recentjob_azure():
     job_name = 'azure_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -612,7 +612,7 @@ def recentjob_aws():
     job_name = 'aws_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -649,7 +649,7 @@ def json_recentjob_aws():
     job_name = 'aws_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -754,7 +754,7 @@ def recentjob_gcp():
     job_name = 'gcp_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -791,7 +791,7 @@ def json_recentjob_gcp():
     job_name = 'gcp_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -896,7 +896,7 @@ def jobs_aws():
         job_name = 'aws_infrastructure'
  
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -945,7 +945,7 @@ def json_jobs_aws():
     job_name = 'aws_infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1004,7 +1004,7 @@ def jobs_aws_delete():
         job_name = 'delete_aws_infrastructure'
  
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1057,7 +1057,7 @@ def json_jobs_aws_delete():
     job_name = 'delete-aws-infrastructure'
  
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1115,7 +1115,7 @@ def jobs_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1164,7 +1164,7 @@ def json_jobs_azure():
     job_name = 'azure_infrastructure'
 
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1222,7 +1222,7 @@ def jobs_azure_delete():
         job_name = 'delete-azure-infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1271,7 +1271,7 @@ def json_jobs_azure_delete():
     job_name = 'delete-azure-infrastructure'
 
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1329,7 +1329,7 @@ def jobs_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1379,7 +1379,7 @@ def json_jobs_gcp():
     job_name = 'gcp_infrastructure'
 
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1438,7 +1438,7 @@ def jobs_gcp_delete():
         job_name = 'gcp_delete_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -1485,7 +1485,7 @@ def json_jobs_gcp_delete():
     job_name = 'delete-gke-infrastructure'
 
     db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -1992,7 +1992,7 @@ def get_aws_cluster():
         return redirect(url_for('login'))
 def get_cluster_azure(account_name):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -2009,7 +2009,7 @@ def get_cluster_azure(account_name):
         return name
 def get_cluster_aws(account_name):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -2110,7 +2110,7 @@ def my_cluster_details_gcp():
         return redirect(url_for('login'))
 def get_cluster_gcp(account_name):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -2160,7 +2160,7 @@ def creation_status_aws():
         job_name = 'aws_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2190,7 +2190,7 @@ def json_creation_status_aws():
         job_name = 'aws_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2417,7 +2417,7 @@ def creation_status_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2447,7 +2447,7 @@ def json_creation_status_azure():
         job_name = 'azure_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2477,7 +2477,7 @@ def creation_status_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2509,7 +2509,7 @@ def json_creation_status_gcp():
         job_name = 'gcp_infrastructure'
 
         db_config = {
-            'host': '4.188.187.102',
+            'host': 'localhost',
             'port': 3306,
             'user': 'root',
             'password': 'cockpitpro',
@@ -2940,7 +2940,7 @@ def check_gke_cluster_deletion_status(account_name,gke_name,region,project):
         return False
 def delete_gke(account_name,gke_name):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -3038,7 +3038,7 @@ def delete_eks():
     return render_template('success.html')
 def delete_eks(account_name,cloud):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -3371,7 +3371,7 @@ def azureuser_insert():
 
 def get_account(username,cloud_name):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -3388,7 +3388,7 @@ def get_account(username,cloud_name):
         return name
 def delete_account(account_name,cloud):
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
@@ -3410,7 +3410,7 @@ def json_get_account():
         username = form['User_name']
         cloud_name = form['cloud_name']
         db_config = {
-        'host': '4.188.187.102',
+        'host': 'localhost',
         'port': 3306,
         'user': 'root',
         'password': 'cockpitpro',
